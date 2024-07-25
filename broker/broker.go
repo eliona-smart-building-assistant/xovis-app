@@ -16,8 +16,8 @@
 package broker
 
 import (
-	"app-name/apiserver"
-	"app-name/model"
+	"xovis/apiserver"
+	"xovis/model"
 )
 
 func GetDevices(config apiserver.Configuration) (model.Root, error) {

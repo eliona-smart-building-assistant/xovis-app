@@ -16,9 +16,9 @@
 package apiservices
 
 import (
-	"app-name/apiserver"
 	"context"
 	"net/http"
+	"xovis/apiserver"
 )
 
 // CustomizationAPIService is a service that implements the logic for the CustomizationAPIServicer
@@ -34,7 +34,7 @@ func NewCustomizationAPIService() apiserver.CustomizationAPIServicer {
 
 // GetDashboardTemplateByName - Get a full dashboard template
 func (s *CustomizationAPIService) GetDashboardTemplateByName(ctx context.Context, dashboardTemplateName string, projectId string) (apiserver.ImplResponse, error) {
-	if dashboardTemplateName == "App Name" {
+	if dashboardTemplateName == "Xovis" {
 		return apiserver.ImplResponse{Code: http.StatusNotImplemented}, nil
 	} else {
 		return apiserver.ImplResponse{Code: http.StatusNotFound}, nil

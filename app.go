@@ -16,15 +16,15 @@
 package main
 
 import (
-	"app-name/apiserver"
-	"app-name/apiservices"
-	"app-name/conf"
-	"app-name/eliona"
-	confmodel "app-name/model/conf"
 	"context"
 	"net/http"
 	"sync"
 	"time"
+	"xovis/apiserver"
+	"xovis/apiservices"
+	"xovis/conf"
+	"xovis/eliona"
+	confmodel "xovis/model/conf"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/app"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"

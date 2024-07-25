@@ -16,8 +16,8 @@
 package eliona
 
 import (
-	confmodel "app-name/model/conf"
 	"fmt"
+	confmodel "xovis/model/conf"
 
 	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
@@ -48,8 +48,8 @@ func notifyUser(userId string, projectId string, assetsCreated int) error {
 				User:      userId,
 				ProjectId: *api.NewNullableString(&projectId),
 				Message: *api.NewNullableTranslation(&api.Translation{
-					De: api.PtrString(fmt.Sprintf("App Name App hat %d neue Assets angelegt. Diese sind nun im Asset-Management verfügbar.", assetsCreated)),
-					En: api.PtrString(fmt.Sprintf("App Name app added %v new assets. They are now available in Asset Management.", assetsCreated)),
+					De: api.PtrString(fmt.Sprintf("Xovis App hat %d neue Assets angelegt. Diese sind nun im Asset-Management verfügbar.", assetsCreated)),
+					En: api.PtrString(fmt.Sprintf("Xovis app added %v new assets. They are now available in Asset Management.", assetsCreated)),
 				}),
 			}).
 		Execute()

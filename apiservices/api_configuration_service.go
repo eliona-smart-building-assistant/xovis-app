@@ -16,12 +16,12 @@
 package apiservices
 
 import (
-	"app-name/apiserver"
-	"app-name/conf"
-	confmodel "app-name/model/conf"
 	"context"
 	"errors"
 	"net/http"
+	"xovis/apiserver"
+	"xovis/conf"
+	confmodel "xovis/model/conf"
 )
 
 // ConfigurationAPIService is a service that implements the logic for the ConfigurationAPIServicer

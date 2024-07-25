@@ -16,13 +16,13 @@
 package conf
 
 import (
-	"app-name/appdb"
-	confmodel "app-name/model/conf"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"xovis/appdb"
+	confmodel "xovis/model/conf"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/frontend"
 	"github.com/eliona-smart-building-assistant/go-utils/common"

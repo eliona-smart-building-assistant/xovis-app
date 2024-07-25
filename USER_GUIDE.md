@@ -1,43 +1,35 @@
-<mark>
-Replace the following strings globally with the real app name:
-</mark>
-
-- `app-name` with app's name. Use `-` if the app name contains spaces. All letters are lower-cased.
-- `app_name` and `app\\_name` with app's name. Use `_` if the app name contains spaces. All letters are lower-cased.
-- `App Name` with app's real names. Letters can be mixed-cased, depends on using e.g. brand names.
-
-# App Name User Guide
+# Xovis User Guide
 
 ### Introduction
 
-> The App Name app provides integration and synchronization between Eliona and App Name services.
+> The Xovis app provides integration and synchronization between Eliona and Xovis services.
 
 ## Overview
 
-This guide provides instructions on configuring, installing, and using the App Name app to manage resources and synchronize data between Eliona and App Name services.
+This guide provides instructions on configuring, installing, and using the Xovis app to manage resources and synchronize data between Eliona and Xovis services.
 
 ## Installation
 
-Install the App Name app via the Eliona App Store.
+Install the Xovis app via the Eliona App Store.
 
 ## Configuration
 
-The App Name app requires configuration through Eliona’s settings interface. Below are the general steps and details needed to configure the app effectively.
+The Xovis app requires configuration through Eliona’s settings interface. Below are the general steps and details needed to configure the app effectively.
 
-### Registering the app in App Name Service
+### Registering the app in Xovis Service
 
-Create credentials in App Name Service to connect the App Name services from Eliona. All required credentials are listed below in the [configuration section](#configure-the-app-name-app).  
+Create credentials in Xovis Service to connect the Xovis services from Eliona. All required credentials are listed below in the [configuration section](#configure-the-xovis-app).  
 
 <mark>TODO: Describe the steps where you can get or create the necessary credentials.</mark> 
 
-### Configure the App Name app 
+### Configure the Xovis app 
 
-Configurations can be created in Eliona under `Apps > App Name > Settings` which opens the app's [Generic Frontend](https://doc.eliona.io/collection/v/eliona-english/manuals/settings/apps). Here you can use the appropriate endpoint with the POST method. Each configuration requires the following data:
+Configurations can be created in Eliona under `Apps > Xovis > Settings` which opens the app's [Generic Frontend](https://doc.eliona.io/collection/v/eliona-english/manuals/settings/apps). Here you can use the appropriate endpoint with the POST method. Each configuration requires the following data:
 
 | Attribute         | Description                                                                     |
 |-------------------|---------------------------------------------------------------------------------|
-| `baseURL`         | URL of the App Name services.                                                   |
-| `clientSecrets`   | Client secrets obtained from the App Name service.                              |
+| `baseURL`         | URL of the Xovis services.                                                   |
+| `clientSecrets`   | Client secrets obtained from the Xovis service.                              |
 | `assetFilter`     | Filtering asset during [Continuous Asset Creation](#continuous-asset-creation). |
 | `enable`          | Flag to enable or disable this configuration.                                   |
 | `refreshInterval` | Interval in seconds for data synchronization.                                   |
@@ -72,6 +64,6 @@ Once configured, the app starts Continuous Asset Creation (CAC). Discovered reso
 
 ### Dashboard templates
 
-The app offers a predefined dashboard that clearly displays the most important information. YOu can create such a dashboard under `Dashboards > Copy Dashboard > From App > App Name`.
+The app offers a predefined dashboard that clearly displays the most important information. YOu can create such a dashboard under `Dashboards > Copy Dashboard > From App > Xovis`.
 
 ### <mark>TODO: Other features</mark>

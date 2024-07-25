@@ -17,17 +17,17 @@ openapi: 3.0.3
 
 info:
   version: 1.0.0
-  title: App Name app API
-  description: API to access and configure the App Name app
+  title: Xovis app API
+  description: API to access and configure the Xovis app
 externalDocs:
-  description: Find out more about the App Name app
-  url: https://github.com/eliona-smart-building-assistant/app-name-app
+  description: Find out more about the Xovis app
+  url: https://github.com/eliona-smart-building-assistant/xovis-app
 servers:
   - url: "https://{server}/v1"
     variables:
       server:
-        default: app-name
-  - url: "https://{environment}.eliona.io/apps/app-name/api/v1"
+        default: xovis
+  - url: "https://{environment}.eliona.io/apps/xovis/api/v1"
     variables:
       environment:
         default: name
@@ -36,17 +36,17 @@ tags:
   - name: Configuration
     description: Configure the app
     externalDocs:
-      url: https://github.com/eliona-smart-building-assistant/app-name-app
+      url: https://github.com/eliona-smart-building-assistant/xovis-app
 
   - name: Version
     description: API version
     externalDocs:
-      url: https://github.com/eliona-smart-building-assistant/app-name-app
+      url: https://github.com/eliona-smart-building-assistant/xovis-app
 
   - name: Customization
     description: Help to customize Eliona environment
     externalDocs:
-      url: https://github.com/eliona-smart-building-assistant/app-name-app
+      url: https://github.com/eliona-smart-building-assistant/xovis-app
 
 paths:
   /configs:

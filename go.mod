@@ -1,4 +1,4 @@
-module app-name
+module xovis
 
 go 1.21
 
