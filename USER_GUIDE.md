@@ -2,11 +2,11 @@
 
 ### Introduction
 
-> The Xovis app provides integration and synchronization between Eliona and Xovis services.
+> The Xovis app provides integration and data gathering from Xovis People Counter sensors to Eliona.
 
 ## Overview
 
-This guide provides instructions on configuring, installing, and using the Xovis app to manage resources and synchronize data between Eliona and Xovis services.
+This guide provides instructions on configuring, installing, and using the Xovis app to manage resources and synchronize data between Eliona and Xovis People counters.
 
 ## Installation
 

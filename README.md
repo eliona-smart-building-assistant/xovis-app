@@ -1,6 +1,6 @@
 # Eliona App for Xovis
 
-The Xovis app is used to access Xovis.
+The Xovis app is used to access Xovis People Counter sensors.
 
 ## Configuration
 
@@ -15,8 +15,6 @@ This initialization can be handled by the `reset.sql` script.
 
 
 ### Environment variables
-
-<mark>Todo: Describe further environment variables tables the app needs for configuration</mark>
 
 - `CONNECTION_STRING`: configures the [Eliona database](https://github.com/eliona-smart-building-assistant/go-eliona/tree/main/db). Otherwise, the app can't be initialized and started (e.g. `postgres://user:pass@localhost:5432/iot`).
 
