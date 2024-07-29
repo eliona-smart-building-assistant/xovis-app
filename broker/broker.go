@@ -14,12 +14,3 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package broker
-
-import (
-	"xovis/apiserver"
-	"xovis/model"
-)
-
-func GetDevices(config apiserver.Configuration) (model.Root, error) {
-	return model.Root{}, nil
-}

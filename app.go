@@ -23,7 +23,6 @@ import (
 	"xovis/apiserver"
 	"xovis/apiservices"
 	"xovis/conf"
-	"xovis/eliona"
 	confmodel "xovis/model/conf"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/app"
@@ -102,39 +101,6 @@ func collectData() {
 
 func collectResources(config *confmodel.Configuration) error {
 	// Do the magic here
-	return nil
-}
-
-// listenForOutputChanges listens to output attribute changes from Eliona. Delete if not needed.
-func listenForOutputChanges() {
-	for { // We want to restart listening in case something breaks.
-		outputs, err := eliona.ListenForOutputChanges()
-		if err != nil {
-			log.Error("eliona", "listening for output changes: %v", err)
-			return
-		}
-		for output := range outputs {
-			if cr := output.ClientReference.Get(); cr != nil && *cr == eliona.ClientReference {
-				// Just an echoed value this app sent.
-				continue
-			}
-			asset, err := conf.GetAssetById(output.AssetId)
-			if err != nil {
-				log.Error("conf", "getting asset by assetID %v: %v", output.AssetId, err)
-				return
-			}
-			if err := outputData(asset, output.Data); err != nil {
-				log.Error("conf", "outputting data (%v) for config %v and assetId %v: %v", output.Data, asset.Config.Id, asset.AssetID, err)
-				return
-			}
-		}
-		time.Sleep(time.Second * 5) // Give the server a little break.
-	}
-}
-
-// outputData implements passing output data to broker. Remove if not needed.
-func outputData(asset confmodel.Asset, data map[string]interface{}) error {
-	// Do the output magic here.
 	return nil
 }
 
