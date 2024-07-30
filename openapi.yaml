@@ -225,11 +225,29 @@ components:
           description: Internal identifier for the configured API (created automatically).
           readOnly: true
           nullable: true
-        apiAccessChangeMe:
+        username:
           type: string
           format: string
-          description: There should be things like API address, access keys and so on.
-          example: 10.10.10.101
+          description: Xovis device username
+          example: admin
+        password:
+          type: string
+          format: string
+          description: Xovis device pasword
+          example: admin
+        hostname:
+          type: string
+          format: string
+          description: Xovis device hostname
+          example: 192.168.1.x
+        port:
+          type: integer
+          description: Xovis device port
+          example: 443
+        checkCertificate:
+          type: boolean
+          description: Specifies whether the device certificate should be verified (should be true for devices publicly accessible, can be false for devices inaccessible from the Internet).
+          example: 443
         enable:
           type: boolean
           description: Flag to enable or disable fetching from this API
@@ -244,15 +262,6 @@ components:
           description: Timeout in seconds
           default: 120
           nullable: true
-        assetFilter:
-          $ref: "#/components/schemas/AssetFilter"
-          nullable: true
-          example:
-            [
-              [{ "parameter": "deviceName", "regex": "Main.*" }, { "parameter": "deviceType", "regex": "110" }],
-              [{ "parameter": "macAddress", "regex": "(70:82:0e:12:28:cc|70:56:06:12:.*)" }],
-              [{ "parameter": "ipAddress", "regex": "192\\.168\\..*" }],
-            ]
         active:
           type: boolean
           readOnly: true

@@ -16,20 +16,18 @@
 package confmodel
 
 type Configuration struct {
-	Id                int64
-	ApiAccessChangeMe string
-	RefreshInterval   int32
-	RequestTimeout    int32
-	AssetFilter       [][]FilterRule
-	Enable            bool
-	Active            bool
-	ProjectIDs        []string
-	UserId            string
-}
-
-type FilterRule struct {
-	Parameter string
-	Regex     string
+	Id               int64
+	Username         string
+	Password         string
+	Hostname         string
+	Port             int32
+	CheckCertificate bool
+	RefreshInterval  int32
+	RequestTimeout   int32
+	Enable           bool
+	Active           bool
+	ProjectIDs       []string
+	UserId           string
 }
 
 type Asset struct {

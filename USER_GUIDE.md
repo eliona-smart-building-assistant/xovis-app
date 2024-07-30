@@ -28,9 +28,11 @@ Configurations can be created in Eliona under `Apps > Xovis > Settings` which op
 
 | Attribute         | Description                                                                     |
 |-------------------|---------------------------------------------------------------------------------|
-| `baseURL`         | URL of the Xovis services.                                                   |
-| `clientSecrets`   | Client secrets obtained from the Xovis service.                              |
-| `assetFilter`     | Filtering asset during [Continuous Asset Creation](#continuous-asset-creation). |
+| `username`         | Xovis device username.                                                   |
+| `password`   | Xovis device password                              |
+| `hostname`     | Xovis device hostname |
+| `port`     | Xovis device port |
+| `checkCertificate`     | Specifies whether the device certificate should be verified (should be `true` for devices publicly accessible, can be `false` for devices inaccessible from the Internet). |
 | `enable`          | Flag to enable or disable this configuration.                                   |
 | `refreshInterval` | Interval in seconds for data synchronization.                                   |
 | `requestTimeout`  | API query timeout in seconds.                                                   |
@@ -40,9 +42,11 @@ Example configuration JSON:
 
 ```json
 {
-  "baseURL": "http://service/v1",
-  "clientSecrets": "random-cl13nt-s3cr3t",
-  "filter": "",
+  "username": "Username",
+  "password": "Password",
+  "hostname": "192.168.1.x",
+  "port": 443,
+  "checkCertificate": true,
   "enable": true,
   "refreshInterval": 60,
   "requestTimeout": 120,

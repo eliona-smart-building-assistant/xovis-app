@@ -19,10 +19,13 @@ create schema if not exists xovis;
 create table if not exists xovis.configuration
 (
 	id                   bigserial primary key,
-	api_access_change_me text not null,
+	username             text not null,
+	password             text not null,
+	hostname             text not null,
+	port                 int not null,
+	check_certificate    boolean not null,
 	refresh_interval     integer not null default 60,
 	request_timeout      integer not null default 120,
-	asset_filter         json not null,
 	active               boolean not null default false,
 	enable               boolean not null default false,
 	project_ids          text[] not null,
