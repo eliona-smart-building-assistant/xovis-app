@@ -136,6 +136,118 @@ paths:
         "400":
           description: Bad request
 
+  /sensors:
+    get:
+      summary: Get list of sensors
+      tags:
+        - Configuration
+      responses:
+        200:
+          description: List of sensors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sensor"
+        500:
+          description: Internal Server Error
+
+    post:
+      summary: Create a new sensor
+      tags:
+        - Configuration
+      requestBody:
+        description: Sensor to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SensorCreateUpdate"
+      responses:
+        201:
+          description: Sensor created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sensor"
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+
+  /sensors/{id}:
+    get:
+      summary: Get a specific sensor
+      tags:
+        - Configuration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Sensor details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sensor"
+        404:
+          description: Sensor not found
+        500:
+          description: Internal Server Error
+
+    put:
+      summary: Update a sensor
+      tags:
+        - Configuration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Sensor data to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SensorCreateUpdate"
+      responses:
+        200:
+          description: Sensor updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sensor"
+        400:
+          description: Bad Request
+        404:
+          description: Sensor not found
+        500:
+          description: Internal Server Error
+
+    delete:
+      summary: Delete a sensor
+      tags:
+        - Configuration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Sensor deleted successfully
+        404:
+          description: Sensor not found
+        500:
+          description: Internal Server Error
+
   /version:
     get:
       summary: Version of the API
@@ -225,25 +337,6 @@ components:
           description: Internal identifier for the configured API (created automatically).
           readOnly: true
           nullable: true
-        username:
-          type: string
-          format: string
-          description: Xovis device username
-          example: admin
-        password:
-          type: string
-          format: string
-          description: Xovis device pasword
-          example: admin
-        hostname:
-          type: string
-          format: string
-          description: Xovis device hostname
-          example: 192.168.1.x
-        port:
-          type: integer
-          description: Xovis device port
-          example: 443
         checkCertificate:
           type: boolean
           description: Specifies whether the device certificate should be verified (should be true for devices publicly accessible, can be false for devices inaccessible from the Internet).
@@ -282,6 +375,55 @@ components:
           description: ID of the last Eliona user who created or updated the configuration
           nullable: true
           example: "90"
+
+    Sensor:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        configuration_id:
+          type: integer
+          example: 100
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+          example: securepassword
+        hostname:
+          type: string
+          example: sensor.local
+        port:
+          type: integer
+          example: 443
+        discovery_mode:
+          type: string
+          enum:
+            - disabled
+            - L2
+            - L3
+          example: L2
+        l3_first_ip:
+          type: string
+          nullable: true
+          example: 192.168.1.10
+        l3_count:
+          type: integer
+          nullable: true
+          example: 100
+
+    SensorCreateUpdate:
+      allOf:
+        - $ref: "#/components/schemas/Sensor"
+        - type: object
+          required:
+            - configuration_id
+            - username
+            - password
+            - hostname
+            - port
+            - discovery_mode
 
     AssetFilter:
       type: array

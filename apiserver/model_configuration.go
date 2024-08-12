@@ -16,18 +16,6 @@ type Configuration struct {
 	// Internal identifier for the configured API (created automatically).
 	Id *int64 `json:"id,omitempty"`
 
-	// Xovis device username
-	Username string `json:"username,omitempty"`
-
-	// Xovis device pasword
-	Password string `json:"password,omitempty"`
-
-	// Xovis device hostname
-	Hostname string `json:"hostname,omitempty"`
-
-	// Xovis device port
-	Port int32 `json:"port,omitempty"`
-
 	// Specifies whether the device certificate should be verified (should be true for devices publicly accessible, can be false for devices inaccessible from the Internet).
 	CheckCertificate bool `json:"checkCertificate,omitempty"`
 

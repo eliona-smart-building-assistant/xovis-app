@@ -19,10 +19,6 @@ create schema if not exists xovis;
 create table if not exists xovis.configuration
 (
 	id                   bigserial primary key,
-	username             text not null,
-	password             text not null,
-	hostname             text not null,
-	port                 int not null,
 	check_certificate    boolean not null,
 	refresh_interval     integer not null default 60,
 	request_timeout      integer not null default 120,
@@ -30,6 +26,21 @@ create table if not exists xovis.configuration
 	enable               boolean not null default false,
 	project_ids          text[] not null,
 	user_id              text not null
+);
+
+-- Should be editable by eliona frontend.
+create table if not exists xovis.sensor
+(
+	id                   bigserial primary key,
+	configuration_id     bigserial not null references xovis.configuration(id) ON DELETE CASCADE,
+	username             text not null,
+	password             text not null,
+	hostname             text not null,
+	port                 int not null,
+
+	discovery_mode       TEXT NOT NULL CHECK (discovery_mode IN ('disabled', 'L2', 'L3')),
+	l3_first_ip          TEXT,  -- For L3 discovery, the starting IP to scan
+	l3_count             INT   -- For L3 discovery, the number of IPs to scan
 );
 
 create table if not exists xovis.asset

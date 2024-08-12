@@ -80,7 +80,7 @@ func collectData() {
 				"Refresh Interval: %d\n"+
 				"Request Timeout: %d\n"+
 				"Project IDs: %v\n",
-				config.Id,
+				config.ID,
 				config.Enable,
 				config.RefreshInterval,
 				config.RequestTimeout,
@@ -88,14 +88,14 @@ func collectData() {
 		}
 
 		common.RunOnceWithParam(func(config confmodel.Configuration) {
-			log.Info("main", "Collecting %d started.", config.Id)
+			log.Info("main", "Collecting %d started.", config.ID)
 			if err := collectResources(&config); err != nil {
 				return // Error is handled in the method itself.
 			}
-			log.Info("main", "Collecting %d finished.", config.Id)
+			log.Info("main", "Collecting %d finished.", config.ID)
 
 			time.Sleep(time.Second * time.Duration(config.RefreshInterval))
-		}, config, config.Id)
+		}, config, config.ID)
 	}
 }
 

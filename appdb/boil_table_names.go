@@ -6,7 +6,9 @@ package appdb
 var TableNames = struct {
 	Asset         string
 	Configuration string
+	Sensor        string
 }{
 	Asset:         "asset",
 	Configuration: "configuration",
+	Sensor:        "sensor",
 }

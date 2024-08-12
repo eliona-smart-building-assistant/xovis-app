@@ -24,6 +24,11 @@ type ConfigurationAPIRouter interface {
 	GetConfigurations(http.ResponseWriter, *http.Request)
 	PostConfiguration(http.ResponseWriter, *http.Request)
 	PutConfigurationById(http.ResponseWriter, *http.Request)
+	SensorsGet(http.ResponseWriter, *http.Request)
+	SensorsIdDelete(http.ResponseWriter, *http.Request)
+	SensorsIdGet(http.ResponseWriter, *http.Request)
+	SensorsIdPut(http.ResponseWriter, *http.Request)
+	SensorsPost(http.ResponseWriter, *http.Request)
 }
 
 // CustomizationAPIRouter defines the required methods for binding the api requests to a responses for the CustomizationAPI
@@ -51,6 +56,11 @@ type ConfigurationAPIServicer interface {
 	GetConfigurations(context.Context) (ImplResponse, error)
 	PostConfiguration(context.Context, Configuration) (ImplResponse, error)
 	PutConfigurationById(context.Context, int64, Configuration) (ImplResponse, error)
+	SensorsGet(context.Context) (ImplResponse, error)
+	SensorsIdDelete(context.Context, int32) (ImplResponse, error)
+	SensorsIdGet(context.Context, int32) (ImplResponse, error)
+	SensorsIdPut(context.Context, int32, SensorCreateUpdate) (ImplResponse, error)
+	SensorsPost(context.Context, SensorCreateUpdate) (ImplResponse, error)
 }
 
 // CustomizationAPIServicer defines the api actions for the CustomizationAPI service

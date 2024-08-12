@@ -16,11 +16,7 @@
 package confmodel
 
 type Configuration struct {
-	Id               int64
-	Username         string
-	Password         string
-	Hostname         string
-	Port             int32
+	ID               int64
 	CheckCertificate bool
 	RefreshInterval  int32
 	RequestTimeout   int32
@@ -28,6 +24,19 @@ type Configuration struct {
 	Active           bool
 	ProjectIDs       []string
 	UserId           string
+}
+
+type Sensor struct {
+	ID       int64
+	Config   Configuration
+	Username string
+	Password string
+	Hostname string
+	Port     int32
+
+	DiscoveryMode string
+	L3FirstIP     *string
+	L3Count       *int32
 }
 
 type Asset struct {

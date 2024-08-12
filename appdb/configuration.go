@@ -25,10 +25,6 @@ import (
 // Configuration is an object representing the database table.
 type Configuration struct {
 	ID               int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Username         string            `boil:"username" json:"username" toml:"username" yaml:"username"`
-	Password         string            `boil:"password" json:"password" toml:"password" yaml:"password"`
-	Hostname         string            `boil:"hostname" json:"hostname" toml:"hostname" yaml:"hostname"`
-	Port             int32             `boil:"port" json:"port" toml:"port" yaml:"port"`
 	CheckCertificate bool              `boil:"check_certificate" json:"check_certificate" toml:"check_certificate" yaml:"check_certificate"`
 	RefreshInterval  int32             `boil:"refresh_interval" json:"refresh_interval" toml:"refresh_interval" yaml:"refresh_interval"`
 	RequestTimeout   int32             `boil:"request_timeout" json:"request_timeout" toml:"request_timeout" yaml:"request_timeout"`
@@ -43,10 +39,6 @@ type Configuration struct {
 
 var ConfigurationColumns = struct {
 	ID               string
-	Username         string
-	Password         string
-	Hostname         string
-	Port             string
 	CheckCertificate string
 	RefreshInterval  string
 	RequestTimeout   string
@@ -56,10 +48,6 @@ var ConfigurationColumns = struct {
 	UserID           string
 }{
 	ID:               "id",
-	Username:         "username",
-	Password:         "password",
-	Hostname:         "hostname",
-	Port:             "port",
 	CheckCertificate: "check_certificate",
 	RefreshInterval:  "refresh_interval",
 	RequestTimeout:   "request_timeout",
@@ -71,10 +59,6 @@ var ConfigurationColumns = struct {
 
 var ConfigurationTableColumns = struct {
 	ID               string
-	Username         string
-	Password         string
-	Hostname         string
-	Port             string
 	CheckCertificate string
 	RefreshInterval  string
 	RequestTimeout   string
@@ -84,10 +68,6 @@ var ConfigurationTableColumns = struct {
 	UserID           string
 }{
 	ID:               "configuration.id",
-	Username:         "configuration.username",
-	Password:         "configuration.password",
-	Hostname:         "configuration.hostname",
-	Port:             "configuration.port",
 	CheckCertificate: "configuration.check_certificate",
 	RefreshInterval:  "configuration.refresh_interval",
 	RequestTimeout:   "configuration.request_timeout",
@@ -98,6 +78,15 @@ var ConfigurationTableColumns = struct {
 }
 
 // Generated where
+
+type whereHelperbool struct{ field string }
+
+func (w whereHelperbool) EQ(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperbool) NEQ(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperbool) LT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
 type whereHelperint32 struct{ field string }
 
@@ -122,15 +111,6 @@ func (w whereHelperint32) NIN(slice []int32) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelperbool struct{ field string }
-
-func (w whereHelperbool) EQ(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperbool) NEQ(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperbool) LT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-
 type whereHelpertypes_StringArray struct{ field string }
 
 func (w whereHelpertypes_StringArray) EQ(x types.StringArray) qm.QueryMod {
@@ -154,10 +134,6 @@ func (w whereHelpertypes_StringArray) GTE(x types.StringArray) qm.QueryMod {
 
 var ConfigurationWhere = struct {
 	ID               whereHelperint64
-	Username         whereHelperstring
-	Password         whereHelperstring
-	Hostname         whereHelperstring
-	Port             whereHelperint32
 	CheckCertificate whereHelperbool
 	RefreshInterval  whereHelperint32
 	RequestTimeout   whereHelperint32
@@ -167,10 +143,6 @@ var ConfigurationWhere = struct {
 	UserID           whereHelperstring
 }{
 	ID:               whereHelperint64{field: "\"xovis\".\"configuration\".\"id\""},
-	Username:         whereHelperstring{field: "\"xovis\".\"configuration\".\"username\""},
-	Password:         whereHelperstring{field: "\"xovis\".\"configuration\".\"password\""},
-	Hostname:         whereHelperstring{field: "\"xovis\".\"configuration\".\"hostname\""},
-	Port:             whereHelperint32{field: "\"xovis\".\"configuration\".\"port\""},
 	CheckCertificate: whereHelperbool{field: "\"xovis\".\"configuration\".\"check_certificate\""},
 	RefreshInterval:  whereHelperint32{field: "\"xovis\".\"configuration\".\"refresh_interval\""},
 	RequestTimeout:   whereHelperint32{field: "\"xovis\".\"configuration\".\"request_timeout\""},
@@ -182,14 +154,17 @@ var ConfigurationWhere = struct {
 
 // ConfigurationRels is where relationship names are stored.
 var ConfigurationRels = struct {
-	Assets string
+	Assets  string
+	Sensors string
 }{
-	Assets: "Assets",
+	Assets:  "Assets",
+	Sensors: "Sensors",
 }
 
 // configurationR is where relationships are stored.
 type configurationR struct {
-	Assets AssetSlice `boil:"Assets" json:"Assets" toml:"Assets" yaml:"Assets"`
+	Assets  AssetSlice  `boil:"Assets" json:"Assets" toml:"Assets" yaml:"Assets"`
+	Sensors SensorSlice `boil:"Sensors" json:"Sensors" toml:"Sensors" yaml:"Sensors"`
 }
 
 // NewStruct creates a new relationship struct
@@ -204,12 +179,19 @@ func (r *configurationR) GetAssets() AssetSlice {
 	return r.Assets
 }
 
+func (r *configurationR) GetSensors() SensorSlice {
+	if r == nil {
+		return nil
+	}
+	return r.Sensors
+}
+
 // configurationL is where Load methods for each relationship are stored.
 type configurationL struct{}
 
 var (
-	configurationAllColumns            = []string{"id", "username", "password", "hostname", "port", "check_certificate", "refresh_interval", "request_timeout", "active", "enable", "project_ids", "user_id"}
-	configurationColumnsWithoutDefault = []string{"username", "password", "hostname", "port", "check_certificate", "project_ids", "user_id"}
+	configurationAllColumns            = []string{"id", "check_certificate", "refresh_interval", "request_timeout", "active", "enable", "project_ids", "user_id"}
+	configurationColumnsWithoutDefault = []string{"check_certificate", "project_ids", "user_id"}
 	configurationColumnsWithDefault    = []string{"id", "refresh_interval", "request_timeout", "active", "enable"}
 	configurationPrimaryKeyColumns     = []string{"id"}
 	configurationGeneratedColumns      = []string{}
@@ -554,6 +536,20 @@ func (o *Configuration) Assets(mods ...qm.QueryMod) assetQuery {
 	return Assets(queryMods...)
 }
 
+// Sensors retrieves all the sensor's Sensors with an executor.
+func (o *Configuration) Sensors(mods ...qm.QueryMod) sensorQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"xovis\".\"sensor\".\"configuration_id\"=?", o.ID),
+	)
+
+	return Sensors(queryMods...)
+}
+
 // LoadAssets allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (configurationL) LoadAssets(ctx context.Context, e boil.ContextExecutor, singular bool, maybeConfiguration interface{}, mods queries.Applicator) error {
@@ -667,6 +663,119 @@ func (configurationL) LoadAssets(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
+// LoadSensors allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (configurationL) LoadSensors(ctx context.Context, e boil.ContextExecutor, singular bool, maybeConfiguration interface{}, mods queries.Applicator) error {
+	var slice []*Configuration
+	var object *Configuration
+
+	if singular {
+		var ok bool
+		object, ok = maybeConfiguration.(*Configuration)
+		if !ok {
+			object = new(Configuration)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeConfiguration)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeConfiguration))
+			}
+		}
+	} else {
+		s, ok := maybeConfiguration.(*[]*Configuration)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeConfiguration)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeConfiguration))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &configurationR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &configurationR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`xovis.sensor`),
+		qm.WhereIn(`xovis.sensor.configuration_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load sensor")
+	}
+
+	var resultSlice []*Sensor
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice sensor")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on sensor")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sensor")
+	}
+
+	if len(sensorAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.Sensors = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &sensorR{}
+			}
+			foreign.R.Configuration = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ConfigurationID {
+				local.R.Sensors = append(local.R.Sensors, foreign)
+				if foreign.R == nil {
+					foreign.R = &sensorR{}
+				}
+				foreign.R.Configuration = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // AddAssetsG adds the given related objects to the existing relationships
 // of the configuration, optionally inserting them as new records.
 // Appends related to o.R.Assets.
@@ -720,6 +829,68 @@ func (o *Configuration) AddAssets(ctx context.Context, exec boil.ContextExecutor
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assetR{
+				Configuration: o,
+			}
+		} else {
+			rel.R.Configuration = o
+		}
+	}
+	return nil
+}
+
+// AddSensorsG adds the given related objects to the existing relationships
+// of the configuration, optionally inserting them as new records.
+// Appends related to o.R.Sensors.
+// Sets related.R.Configuration appropriately.
+// Uses the global database handle.
+func (o *Configuration) AddSensorsG(ctx context.Context, insert bool, related ...*Sensor) error {
+	return o.AddSensors(ctx, boil.GetContextDB(), insert, related...)
+}
+
+// AddSensors adds the given related objects to the existing relationships
+// of the configuration, optionally inserting them as new records.
+// Appends related to o.R.Sensors.
+// Sets related.R.Configuration appropriately.
+func (o *Configuration) AddSensors(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Sensor) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ConfigurationID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"xovis\".\"sensor\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"configuration_id"}),
+				strmangle.WhereClause("\"", "\"", 2, sensorPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ConfigurationID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &configurationR{
+			Sensors: related,
+		}
+	} else {
+		o.R.Sensors = append(o.R.Sensors, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &sensorR{
 				Configuration: o,
 			}
 		} else {
