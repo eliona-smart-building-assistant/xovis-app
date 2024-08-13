@@ -17,11 +17,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
 	"xovis/apiserver"
 	"xovis/apiservices"
+	"xovis/broker"
 	"xovis/conf"
 	confmodel "xovis/model/conf"
 
@@ -87,19 +89,33 @@ func collectData() {
 				config.ProjectIDs)
 		}
 
-		common.RunOnceWithParam(func(config confmodel.Configuration) {
-			log.Info("main", "Collecting %d started.", config.ID)
-			if err := collectResources(&config); err != nil {
-				return // Error is handled in the method itself.
-			}
-			log.Info("main", "Collecting %d finished.", config.ID)
+		sensors, err := conf.GetSensorsOfConfig(context.Background(), config.ID)
+		if err != nil {
+			log.Fatal("conf", "Couldn't read sensors from DB: %v", err)
+			return
+		}
+		for _, sensor := range sensors {
+			common.RunOnceWithParam(func(sensor confmodel.Sensor) {
+				log.Info("main", "Collecting %d started.", sensor.ID)
+				if err := collectResources(sensor); err != nil {
+					return // Error is handled in the method itself.
+				}
+				log.Info("main", "Collecting %d finished.", sensor.ID)
 
-			time.Sleep(time.Second * time.Duration(config.RefreshInterval))
-		}, config, config.ID)
+				time.Sleep(time.Second * time.Duration(config.RefreshInterval))
+			}, sensor, sensor.ID)
+		}
 	}
 }
 
-func collectResources(config *confmodel.Configuration) error {
+func collectResources(sensor confmodel.Sensor) error {
+	xovis := broker.NewXovisConnector(sensor.Username, sensor.Password, sensor.Hostname, int(sensor.Port), sensor.Config.CheckCertificate, int(sensor.Config.RequestTimeout))
+	lines, zones, err := xovis.GetAllCounters()
+	if err != nil {
+		log.Error("broker", "getting all counters: %v", err)
+		return err
+	}
+	fmt.Println(lines, zones)
 	// Do the magic here
 	return nil
 }

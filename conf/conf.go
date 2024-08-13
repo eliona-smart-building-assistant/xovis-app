@@ -215,6 +215,26 @@ func GetSensors(ctx context.Context) ([]confmodel.Sensor, error) {
 	return appSensors, nil
 }
 
+func GetSensorsOfConfig(ctx context.Context, configID int64) ([]confmodel.Sensor, error) {
+	dbSensors, err := appdb.Sensors(
+		appdb.SensorWhere.ConfigurationID.EQ(configID),
+	).AllG(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("fetching sensors from database: %v", err)
+	}
+
+	var appSensors []confmodel.Sensor
+	for _, dbSensor := range dbSensors {
+		appSensor, err := toAppSensor(ctx, dbSensor)
+		if err != nil {
+			return nil, fmt.Errorf("converting DB sensor to app sensor: %v", err)
+		}
+		appSensors = append(appSensors, appSensor)
+	}
+
+	return appSensors, nil
+}
+
 func toDbSensor(ctx context.Context, appSensor confmodel.Sensor) (appdb.Sensor, error) {
 	dbSensor := appdb.Sensor{
 		ID:              appSensor.ID,
