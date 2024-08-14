@@ -244,8 +244,8 @@ func toDbSensor(ctx context.Context, appSensor confmodel.Sensor) (appdb.Sensor, 
 		Hostname:        appSensor.Hostname,
 		Port:            appSensor.Port,
 		DiscoveryMode:   appSensor.DiscoveryMode,
-		L3FirstIP:       null.NewString(*appSensor.L3FirstIP, appSensor.L3FirstIP != nil),
-		L3Count:         null.NewInt32(*appSensor.L3Count, appSensor.L3Count != nil),
+		L3FirstIP:       null.StringFromPtr(appSensor.L3FirstIP),
+		L3Count:         null.Int32FromPtr(appSensor.L3Count),
 	}
 
 	return dbSensor, nil
