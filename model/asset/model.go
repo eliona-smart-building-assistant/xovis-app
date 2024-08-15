@@ -117,6 +117,9 @@ type PeopleCounter struct {
 	Model string `eliona:"model" subtype:"info"`
 	IP    string `eliona:"ip" subtype:"info"`
 
+	lines []Line
+	zones []Zone
+
 	Config *confmodel.Configuration
 }
 
@@ -148,15 +151,31 @@ func (d *PeopleCounter) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (d *PeopleCounter) GetLocationalChildren() []asset.LocationalNode {
-	return []asset.LocationalNode{}
+	locationalChildren := make([]asset.LocationalNode, 0, len(d.lines)+len(d.zones))
+	for i := range d.lines {
+		locationalChildren[i] = &d.lines[i]
+	}
+	for i := range d.zones {
+		locationalChildren[i] = &d.zones[i]
+	}
+	return locationalChildren
 }
 
 func (d *PeopleCounter) GetFunctionalChildren() []asset.FunctionalNode {
-	return []asset.FunctionalNode{}
+	functionalChildren := make([]asset.FunctionalNode, 0, len(d.lines)+len(d.zones))
+	for i := range d.lines {
+		functionalChildren[i] = &d.lines[i]
+	}
+	for i := range d.zones {
+		functionalChildren[i] = &d.zones[i]
+	}
+	return functionalChildren
 }
 
 type Group struct {
 	Name string `eliona:"name" subtype:"info"`
+
+	sensors []PeopleCounter
 
 	Config *confmodel.Configuration
 }
@@ -189,16 +208,23 @@ func (d *Group) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (d *Group) GetLocationalChildren() []asset.LocationalNode {
-	return []asset.LocationalNode{}
+	locationalChildren := make([]asset.LocationalNode, 0, len(d.sensors))
+	for i := range d.sensors {
+		locationalChildren[i] = &d.sensors[i]
+	}
+	return locationalChildren
 }
 
 func (d *Group) GetFunctionalChildren() []asset.FunctionalNode {
-	return []asset.FunctionalNode{}
+	functionalChildren := make([]asset.FunctionalNode, 0, len(d.sensors))
+	for i := range d.sensors {
+		functionalChildren[i] = &d.sensors[i]
+	}
+	return functionalChildren
 }
 
 type Root struct {
-	locationsMap map[string]Group
-	devicesSlice []Group
+	groups []Group
 
 	Config *confmodel.Configuration
 }
@@ -231,18 +257,17 @@ func (r *Root) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (r *Root) GetLocationalChildren() []asset.LocationalNode {
-	locationalChildren := make([]asset.LocationalNode, 0, len(r.locationsMap))
-	for _, room := range r.locationsMap {
-		roomCopy := room // Create a copy of room
-		locationalChildren = append(locationalChildren, &roomCopy)
+	locationalChildren := make([]asset.LocationalNode, 0, len(r.groups))
+	for i := range r.groups {
+		locationalChildren[i] = &r.groups[i]
 	}
 	return locationalChildren
 }
 
 func (r *Root) GetFunctionalChildren() []asset.FunctionalNode {
-	functionalChildren := make([]asset.FunctionalNode, 0, len(r.devicesSlice))
-	for i := range r.devicesSlice {
-		functionalChildren[i] = &r.devicesSlice[i]
+	functionalChildren := make([]asset.FunctionalNode, 0, len(r.groups))
+	for i := range r.groups {
+		functionalChildren[i] = &r.groups[i]
 	}
 	return functionalChildren
 }
