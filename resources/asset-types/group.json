@@ -1,0 +1,21 @@
+{
+	"attributes": [
+		{
+			"enable": true,
+			"name": "name",
+			"subtype": "info",
+			"translation": {
+				"de": "Name",
+				"en": "Name"
+			}
+		}
+	],
+	"custom": true,
+	"name": "xovis_group",
+	"translation": {
+		"de": "Xovis Gruppe",
+		"en": "Xovis Group"
+	},
+	"urldoc": "https://doc.eliona.io/collection/v/eliona-english/eliona-apps/apps/xovis",
+	"vendor": "Xovis AG"
+}

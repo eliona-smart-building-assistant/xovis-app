@@ -22,76 +22,104 @@ import (
 	confmodel "xovis/model/conf"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
-	"github.com/eliona-smart-building-assistant/go-eliona/utils"
-	"github.com/eliona-smart-building-assistant/go-utils/common"
 )
 
 // TODO: define the asset structure here
 
-type ExampleDevice struct {
-	ID   string `eliona:"id" subtype:"info"`
-	Name string `eliona:"name,filterable" subtype:"info"`
+type PeopleCounter struct {
+	MAC   string `eliona:"mac" subtype:"info"`
+	Name  string `eliona:"name" subtype:"info"`
+	Model string `eliona:"model" subtype:"info"`
+	IP    string `eliona:"ip" subtype:"info"`
 
 	Config *confmodel.Configuration
 }
 
-func (d *ExampleDevice) AdheresToFilter(filter [][]confmodel.FilterRule) (bool, error) {
-	f := apiFilterToCommonFilter(filter)
-	fp, err := utils.StructToMap(d)
-	if err != nil {
-		return false, fmt.Errorf("converting struct to map: %v", err)
-	}
-	adheres, err := common.Filter(f, fp)
-	if err != nil {
-		return false, err
-	}
-	return adheres, nil
-}
-
-func (d *ExampleDevice) GetName() string {
+func (d *PeopleCounter) GetName() string {
 	return d.Name
 }
 
-func (d *ExampleDevice) GetDescription() string {
-	return ""
+func (d *PeopleCounter) GetDescription() string {
+	return "Xovis People Counter" + d.Name
 }
 
-func (d *ExampleDevice) GetAssetType() string {
-	return "app_name_device"
+func (d *PeopleCounter) GetAssetType() string {
+	return "xovis_people_counter"
 }
 
-func (d *ExampleDevice) GetGAI() string {
-	return d.GetAssetType() + "_" + d.ID
+func (d *PeopleCounter) GetGAI() string {
+	return d.GetAssetType() + "_" + d.MAC
 }
 
-func (d *ExampleDevice) GetAssetID(projectID string) (*int32, error) {
+func (d *PeopleCounter) GetAssetID(projectID string) (*int32, error) {
 	return conf.GetAssetId(context.Background(), *d.Config, projectID, d.GetGAI())
 }
 
-func (d *ExampleDevice) SetAssetID(assetID int32, projectID string) error {
-	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, d.ID); err != nil {
+func (d *PeopleCounter) SetAssetID(assetID int32, projectID string) error {
+	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, d.MAC); err != nil {
 		return fmt.Errorf("inserting asset to config db: %v", err)
 	}
 	return nil
 }
 
-func (d *ExampleDevice) GetLocationalChildren() []asset.LocationalNode {
+func (d *PeopleCounter) GetLocationalChildren() []asset.LocationalNode {
 	return []asset.LocationalNode{}
 }
 
-func (d *ExampleDevice) GetFunctionalChildren() []asset.FunctionalNode {
+func (d *PeopleCounter) GetFunctionalChildren() []asset.FunctionalNode {
+	return []asset.FunctionalNode{}
+}
+
+type Group struct {
+	Name string `eliona:"name" subtype:"info"`
+
+	Config *confmodel.Configuration
+}
+
+func (d *Group) GetName() string {
+	return d.Name
+}
+
+func (d *Group) GetDescription() string {
+	return "Xovis group " + d.Name
+}
+
+func (d *Group) GetAssetType() string {
+	return "xovis_group"
+}
+
+func (d *Group) GetGAI() string {
+	return d.GetAssetType() + "_" + d.Name
+}
+
+func (d *Group) GetAssetID(projectID string) (*int32, error) {
+	return conf.GetAssetId(context.Background(), *d.Config, projectID, d.GetGAI())
+}
+
+func (d *Group) SetAssetID(assetID int32, projectID string) error {
+	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, d.Name); err != nil {
+		return fmt.Errorf("inserting asset to config db: %v", err)
+	}
+	return nil
+}
+
+func (d *Group) GetLocationalChildren() []asset.LocationalNode {
+	return []asset.LocationalNode{}
+}
+
+func (d *Group) GetFunctionalChildren() []asset.FunctionalNode {
 	return []asset.FunctionalNode{}
 }
 
 type Root struct {
-	locationsMap map[string]ExampleDevice
-	devicesSlice []ExampleDevice
+	locationsMap map[string]Group
+	devicesSlice []Group
 
 	Config *confmodel.Configuration
 }
 
 func (r *Root) GetName() string {
-	return "app_name"
+	return "xovis"
 }
 
 func (r *Root) GetDescription() string {
@@ -99,7 +127,7 @@ func (r *Root) GetDescription() string {
 }
 
 func (r *Root) GetAssetType() string {
-	return "app_name_root"
+	return "xovis_root"
 }
 
 func (r *Root) GetGAI() string {
@@ -132,20 +160,4 @@ func (r *Root) GetFunctionalChildren() []asset.FunctionalNode {
 		functionalChildren[i] = &r.devicesSlice[i]
 	}
 	return functionalChildren
-}
-
-//
-
-func apiFilterToCommonFilter(input [][]confmodel.FilterRule) [][]common.FilterRule {
-	result := make([][]common.FilterRule, len(input))
-	for i := 0; i < len(input); i++ {
-		result[i] = make([]common.FilterRule, len(input[i]))
-		for j := 0; j < len(input[i]); j++ {
-			result[i][j] = common.FilterRule{
-				Parameter: input[i][j].Parameter,
-				Regex:     input[i][j].Regex,
-			}
-		}
-	}
-	return result
 }

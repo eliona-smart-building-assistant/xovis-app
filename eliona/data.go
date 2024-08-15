@@ -26,10 +26,10 @@ import (
 
 const ClientReference string = "xovis"
 
-func UpsertAssetData(config confmodel.Configuration, assets []assetmodel.ExampleDevice) error {
+func UpsertAssetData(config confmodel.Configuration, assets []assetmodel.PeopleCounter) error {
 	for _, projectId := range config.ProjectIDs {
 		for _, a := range assets {
-			log.Debug("Eliona", "upserting data for asset: config %d and asset '%v'", config.Id, a.GetGAI())
+			log.Debug("Eliona", "upserting data for asset: config %d and asset '%v'", config.ID, a.GetGAI())
 			assetId, err := a.GetAssetID(projectId)
 			if err != nil {
 				return err

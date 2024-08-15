@@ -1,0 +1,48 @@
+{
+	"attributes": [
+		{
+			"enable": true,
+			"name": "mac",
+			"subtype": "info",
+			"translation": {
+				"de": "MAC-Adresse",
+				"en": "MAC Address"
+			}
+		},
+		{
+			"enable": true,
+			"name": "name",
+			"subtype": "info",
+			"translation": {
+				"de": "Name",
+				"en": "Name"
+			}
+		},
+		{
+			"enable": true,
+			"name": "model",
+			"subtype": "info",
+			"translation": {
+				"de": "Gerätemodell",
+				"en": "Device model"
+			}
+		},
+		{
+			"enable": true,
+			"name": "ip",
+			"subtype": "info",
+			"translation": {
+				"de": "IP-Adresse",
+				"en": "IP Address"
+			}
+		}
+	],
+	"custom": true,
+	"name": "xovis_people_counter",
+	"translation": {
+		"de": "Xovis Personen Zähler",
+		"en": "Xovis People Counter"
+	},
+	"urldoc": "https://doc.eliona.io/collection/v/eliona-english/eliona-apps/apps/xovis",
+	"vendor": "Xovis AG"
+}
