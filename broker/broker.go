@@ -28,9 +28,6 @@ import (
 )
 
 const (
-	ReqMethodPost = "POST"
-	ReqMethodGet  = "GET"
-
 	MODULE = "broker"
 )
 
@@ -206,7 +203,7 @@ func NewXovisConnector(userName string,
 }
 
 func (x *Xovis) ResetAllCounters() error {
-	_, err := x.request(ResetAllCounterPath, ReqMethodPost)
+	_, err := x.request(ResetAllCounterPath, http.MethodPost)
 
 	if err != nil {
 		log.Error(MODULE, "error reset all counters: %v", err)
@@ -311,7 +308,7 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 func (x *Xovis) getCountersRaw() (Logics, error) {
 	logics := Logics{}
 
-	rawData, err := x.request(AllCounterPath, ReqMethodGet)
+	rawData, err := x.request(AllCounterPath, http.MethodGet)
 
 	if err != nil {
 		log.Error(MODULE, "get counter data: %v", err)
