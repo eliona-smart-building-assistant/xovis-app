@@ -24,7 +24,92 @@ import (
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 )
 
-// TODO: define the asset structure here
+type Zone struct {
+	ID       string `eliona:"id" subtype:"info"`
+	Name     string `eliona:"name" subtype:"info"`
+	Presence int    `eliona:"presence" subtype:"input"`
+
+	Config *confmodel.Configuration
+}
+
+func (d *Zone) GetName() string {
+	return d.Name
+}
+
+func (d *Zone) GetDescription() string {
+	return "Xovis People Counter Zone" + d.Name
+}
+
+func (d *Zone) GetAssetType() string {
+	return "xovis_zone"
+}
+
+func (d *Zone) GetGAI() string {
+	return d.GetAssetType() + "_" + d.ID
+}
+
+func (d *Zone) GetAssetID(projectID string) (*int32, error) {
+	return conf.GetAssetId(context.Background(), *d.Config, projectID, d.GetGAI())
+}
+
+func (d *Zone) SetAssetID(assetID int32, projectID string) error {
+	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, d.ID); err != nil {
+		return fmt.Errorf("inserting asset to config db: %v", err)
+	}
+	return nil
+}
+
+func (d *Zone) GetLocationalChildren() []asset.LocationalNode {
+	return []asset.LocationalNode{}
+}
+
+func (d *Zone) GetFunctionalChildren() []asset.FunctionalNode {
+	return []asset.FunctionalNode{}
+}
+
+type Line struct {
+	ID       string `eliona:"id" subtype:"info"`
+	Name     string `eliona:"name" subtype:"info"`
+	Forward  string `eliona:"forward" subtype:"input"`
+	Backward string `eliona:"backward" subtype:"input"`
+
+	Config *confmodel.Configuration
+}
+
+func (d *Line) GetName() string {
+	return d.Name
+}
+
+func (d *Line) GetDescription() string {
+	return "Xovis People Counter Line" + d.Name
+}
+
+func (d *Line) GetAssetType() string {
+	return "xovis_line"
+}
+
+func (d *Line) GetGAI() string {
+	return d.GetAssetType() + "_" + d.ID
+}
+
+func (d *Line) GetAssetID(projectID string) (*int32, error) {
+	return conf.GetAssetId(context.Background(), *d.Config, projectID, d.GetGAI())
+}
+
+func (d *Line) SetAssetID(assetID int32, projectID string) error {
+	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, d.ID); err != nil {
+		return fmt.Errorf("inserting asset to config db: %v", err)
+	}
+	return nil
+}
+
+func (d *Line) GetLocationalChildren() []asset.LocationalNode {
+	return []asset.LocationalNode{}
+}
+
+func (d *Line) GetFunctionalChildren() []asset.FunctionalNode {
+	return []asset.FunctionalNode{}
+}
 
 type PeopleCounter struct {
 	MAC   string `eliona:"mac" subtype:"info"`

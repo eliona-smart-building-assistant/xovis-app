@@ -301,7 +301,7 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 			zones = append(zones, singleZone)
 
 		default:
-			log.Debug(MODULE, "unknown  countertype: %v", logic.Info)
+			log.Debug(MODULE, "unknown counter type: %v", logic.Info)
 		}
 	}
 
@@ -350,7 +350,7 @@ func (x *Xovis) isTokenValid() bool {
 
 	if x.login.ReceivedAt+int64(x.login.ValidFor) <= now+240 ||
 		x.login.LastUsedAt+int64(x.login.MaxUnusedFor) <= now+240 {
-		log.Debug(MODULE, "token expiered")
+		log.Debug(MODULE, "token expired")
 		return false
 	}
 	return true

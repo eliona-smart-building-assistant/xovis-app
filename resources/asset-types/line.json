@@ -1,0 +1,48 @@
+{
+	"attributes": [
+		{
+			"enable": true,
+			"name": "id",
+			"subtype": "info",
+			"translation": {
+				"de": "ID",
+				"en": "ID"
+			}
+		},
+		{
+			"enable": true,
+			"name": "name",
+			"subtype": "info",
+			"translation": {
+				"de": "Name",
+				"en": "Name"
+			}
+		},
+		{
+			"enable": true,
+			"name": "forward",
+			"subtype": "input",
+			"translation": {
+				"de": "Vorwärts",
+				"en": "Forward"
+			}
+		},
+		{
+			"enable": true,
+			"name": "backward",
+			"subtype": "input",
+			"translation": {
+				"de": "Rückwärts",
+				"en": "Backward"
+			}
+		}
+	],
+	"custom": true,
+	"name": "xovis_line",
+	"translation": {
+		"de": "Xovis Linie",
+		"en": "Xovis Line"
+	},
+	"urldoc": "https://doc.eliona.io/collection/v/eliona-english/eliona-apps/apps/xovis",
+	"vendor": "Xovis AG"
+}
