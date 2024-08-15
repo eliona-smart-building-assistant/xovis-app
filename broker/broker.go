@@ -19,6 +19,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -86,8 +87,7 @@ func (httpClient *XovisHttp) Request(method, apiPath string, headers map[string]
 
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		log.Error(module, "creating request: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("creating request: %w", err)
 	}
 	for key, value := range headers {
 		req.Header.Set(key, value)
@@ -95,21 +95,18 @@ func (httpClient *XovisHttp) Request(method, apiPath string, headers map[string]
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error(module, "request to %s %v", url, err)
-		return nil, err
+		return nil, fmt.Errorf("request to %s %w", url, err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(module, "reading body from %s", url)
-		return nil, err
+		return nil, fmt.Errorf("reading body from %s: %w", url, err)
 	}
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusCreated {
-		log.Warn(module, "%s not ok: status code: %d", url, resp.StatusCode)
 		log.Debug(module, " -> with: %v, %v", headers, string(body))
-		return body, err
+		return body, fmt.Errorf("%s not ok: status code: %d", url, resp.StatusCode)
 	}
 
 	return body, nil
@@ -170,9 +167,9 @@ func NewXovisConnector(userName, password, host string, port int, checkCert bool
 func (x *Xovis) ResetAllCounters() error {
 	_, err := x.request(ResetAllCountersPath, http.MethodPost)
 	if err != nil {
-		log.Error(module, "resetting all counters: %v", err)
+		return fmt.Errorf("resetting all counters: %w", err)
 	}
-	return err
+	return nil
 }
 
 func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
@@ -181,8 +178,7 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 
 	logics, err := x.getCountersRaw()
 	if err != nil {
-		log.Error(module, "getting counter data: %v", err)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("getting counter data: %w", err)
 	}
 
 	for _, logic := range logics.Logics {
@@ -237,12 +233,10 @@ func (x *Xovis) getCountersRaw() (Logics, error) {
 	var logics Logics
 	rawData, err := x.request(AllCountersPath, http.MethodGet)
 	if err != nil {
-		log.Error(module, "getting counter data: %v", err)
-		return logics, err
+		return logics, fmt.Errorf("getting counter data: %w", err)
 	}
 	if err := json.Unmarshal(rawData, &logics); err != nil {
-		log.Error(module, "decoding logics: %v", err)
-		return logics, err
+		return logics, fmt.Errorf("decoding logics: %w", err)
 	}
 	return logics, nil
 }
@@ -256,7 +250,7 @@ func (x *Xovis) request(path, method string) ([]byte, error) {
 	if err != nil {
 		x.login.LastUsedAt = 0
 		x.login.ReceivedAt = 0
-		return jsonBody, err
+		return jsonBody, fmt.Errorf("request error: %w", err)
 	}
 	x.login.LastUsedAt = time.Now().Unix()
 	return jsonBody, nil
