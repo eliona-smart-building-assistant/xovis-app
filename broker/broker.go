@@ -45,27 +45,12 @@ const (
 )
 
 type LineData struct {
-	ForwardTotal   int `json:"fw_tot"`
-	BackwardTotal  int `json:"bw_tot"`
-	ForwardDiv     int `json:"rtl_counter"`
-	BackwardDiv    int `json:"ltr_counter"`
-	ForwardMale    int `json:"fw_male"`
-	BackwardMale   int `json:"bw_male"`
-	ForwardFemale  int `json:"fw_female"`
-	BackwardFemale int `json:"bw_female"`
-	ForwardMask    int `json:"fw_mask"`
-	BackwardMask   int `json:"bw_mask"`
-	ForwardNoMask  int `json:"fw_no_mask"`
-	BackwardNoMask int `json:"bw_no_mask"`
+	ForwardTotal  int
+	BackwardTotal int
 }
 
 type ZoneData struct {
-	ForwardTotal  int `json:"fw_tot"`
-	BackwardTotal int `json:"bw_tot"`
-	ForwardDiv    int `json:"rtl_counter"`
-	BackwardDiv   int `json:"ltr_counter"`
-	ObjectCount   int `json:"object_cnt"`
-	FillLevel     int `json:"fill_level"`
+	FillLevel int
 }
 
 type Line struct {
@@ -93,7 +78,7 @@ func (httpClient *XovisHttp) Request(method, apiPath string, headers map[string]
 	url := "https://" + httpClient.host + ":" + httpClient.port + apiPath
 
 	client := &http.Client{
-		Timeout: time.Duration(httpClient.timeout) * time.Second,
+		Timeout: httpClient.timeout,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: !httpClient.checkCert},
 		},
@@ -101,7 +86,7 @@ func (httpClient *XovisHttp) Request(method, apiPath string, headers map[string]
 
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		log.Error(module, "error creating request: %v", err)
+		log.Error(module, "creating request: %v", err)
 		return nil, err
 	}
 	for key, value := range headers {
@@ -110,14 +95,14 @@ func (httpClient *XovisHttp) Request(method, apiPath string, headers map[string]
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error(module, "error request to %s %v", url, err)
+		log.Error(module, "request to %s %v", url, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(module, "error reading body from %s", url)
+		log.Error(module, "reading body from %s", url)
 		return nil, err
 	}
 
@@ -185,7 +170,7 @@ func NewXovisConnector(userName, password, host string, port int, checkCert bool
 func (x *Xovis) ResetAllCounters() error {
 	_, err := x.request(ResetAllCountersPath, http.MethodPost)
 	if err != nil {
-		log.Error(module, "error resetting all counters: %v", err)
+		log.Error(module, "resetting all counters: %v", err)
 	}
 	return err
 }
@@ -196,7 +181,7 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 
 	logics, err := x.getCountersRaw()
 	if err != nil {
-		log.Error(module, "error getting counter data: %v", err)
+		log.Error(module, "getting counter data: %v", err)
 		return nil, nil, err
 	}
 
@@ -204,18 +189,8 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 		switch logic.Info {
 		case InfoTypeLine, InfoTypeLineLegacy:
 			lineData := LineData{
-				ForwardTotal:   -1,
-				BackwardTotal:  -1,
-				ForwardDiv:     0,
-				BackwardDiv:    0,
-				ForwardMale:    -1,
-				BackwardMale:   -1,
-				ForwardFemale:  -1,
-				BackwardFemale: -1,
-				ForwardMask:    -1,
-				BackwardMask:   -1,
-				ForwardNoMask:  -1,
-				BackwardNoMask: -1,
+				ForwardTotal:  -1,
+				BackwardTotal: -1,
 			}
 
 			for _, count := range logic.Counts {
@@ -224,22 +199,6 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 					lineData.BackwardTotal = count.Value
 				case "fw":
 					lineData.ForwardTotal = count.Value
-				case "fw-male":
-					lineData.ForwardMale = count.Value
-				case "bw-male":
-					lineData.BackwardMale = count.Value
-				case "fw-female":
-					lineData.ForwardFemale = count.Value
-				case "bw-female":
-					lineData.BackwardFemale = count.Value
-				case "fw-mask":
-					lineData.ForwardMask = count.Value
-				case "bw-mask":
-					lineData.BackwardMask = count.Value
-				case "fw-no_mask":
-					lineData.ForwardNoMask = count.Value
-				case "bw-no_mask":
-					lineData.BackwardNoMask = count.Value
 				default:
 					log.Debug(module, "unknown counter type: %v", count.Name)
 				}
@@ -262,12 +221,7 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 				ID:   logic.ID,
 				Time: logics.Time,
 				Data: ZoneData{
-					FillLevel:     logic.Counts[0].Value,
-					ObjectCount:   0,
-					ForwardDiv:    0,
-					BackwardDiv:   0,
-					ForwardTotal:  0,
-					BackwardTotal: 0,
+					FillLevel: logic.Counts[0].Value,
 				},
 			})
 
@@ -283,11 +237,11 @@ func (x *Xovis) getCountersRaw() (Logics, error) {
 	var logics Logics
 	rawData, err := x.request(AllCountersPath, http.MethodGet)
 	if err != nil {
-		log.Error(module, "error getting counter data: %v", err)
+		log.Error(module, "getting counter data: %v", err)
 		return logics, err
 	}
 	if err := json.Unmarshal(rawData, &logics); err != nil {
-		log.Error(module, "error decoding logics: %v", err)
+		log.Error(module, "decoding logics: %v", err)
 		return logics, err
 	}
 	return logics, nil
