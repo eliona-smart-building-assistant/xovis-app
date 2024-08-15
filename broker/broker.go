@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	MODULE = "broker"
+	module = "broker"
 
 	UserViewer = "viewer"
 	UserAdmin  = "admin"
@@ -40,8 +40,8 @@ const (
 
 	ApiPath = "/api/v5"
 
-	AllCounterPath      = ApiPath + "/singlesensor/data/live/logics"
-	ResetAllCounterPath = ApiPath + "/singlesensor/data/live/counts/reset"
+	AllCountersPath      = ApiPath + "/singlesensor/data/live/logics"
+	ResetAllCountersPath = ApiPath + "/singlesensor/data/live/counts/reset"
 )
 
 type LineData struct {
@@ -70,14 +70,14 @@ type ZoneData struct {
 
 type Line struct {
 	Name string
-	Id   int
+	ID   int
 	Data LineData
 	Time string
 }
 
 type Zone struct {
 	Name string
-	Id   int
+	ID   int
 	Data ZoneData
 	Time string
 }
@@ -85,68 +85,65 @@ type Zone struct {
 type XovisHttp struct {
 	host      string
 	port      string
-	timeOut   int
+	timeout   time.Duration
 	checkCert bool
 }
 
-func (con *XovisHttp) Request(method, apiPath string, headers map[string]string) ([]byte, error) {
-	url := "https://" + con.host + ":" + con.port + apiPath
-	timeout := time.Duration(con.timeOut) * time.Second
+func (httpClient *XovisHttp) Request(method, apiPath string, headers map[string]string) ([]byte, error) {
+	url := "https://" + httpClient.host + ":" + httpClient.port + apiPath
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !con.checkCert},
-	}
-
-	httpClient := http.Client{
-		Timeout:   timeout,
-		Transport: tr,
+	client := &http.Client{
+		Timeout: time.Duration(httpClient.timeout) * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !httpClient.checkCert},
+		},
 	}
 
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		log.Error(MODULE, "error creating request: %v", err)
+		log.Error(module, "error creating request: %v", err)
 		return nil, err
 	}
-	for header, value := range headers {
-		req.Header.Set(header, value)
+	for key, value := range headers {
+		req.Header.Set(key, value)
 	}
 
-	resp, err := httpClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
-		log.Error(MODULE, "error request to %s %v", url, err)
+		log.Error(module, "error request to %s %v", url, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	respBody, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(MODULE, "error reading body from %s", url)
+		log.Error(module, "error reading body from %s", url)
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusCreated {
-		log.Warn(MODULE, "%s not ok: status code: %d", url, resp.StatusCode)
-		log.Debug(MODULE, " -> with: %v, %v", headers, string(respBody))
-		return respBody, err
+		log.Warn(module, "%s not ok: status code: %d", url, resp.StatusCode)
+		log.Debug(module, " -> with: %v, %v", headers, string(body))
+		return body, err
 	}
 
-	return respBody, err
+	return body, nil
 }
 
 type Geometrie struct {
-	Id   int    `json:"id"`
+	ID   int    `json:"id"`
 	Type string `json:"type"`
 	Name string `json:"name"`
 }
 
 type Count struct {
-	Id    int    `json:"id"`
+	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Value int    `json:"value"`
 }
 
 type Logic struct {
-	Id         int         `json:"id"`
+	ID         int         `json:"id"`
 	Name       string      `json:"name"`
 	Info       string      `json:"info"`
 	Geometries []Geometrie `json:"geometries"`
@@ -168,7 +165,7 @@ type Login struct {
 
 type Xovis struct {
 	basicAuth string
-	con       XovisHttp
+	http      XovisHttp
 	login     Login
 }
 
@@ -176,19 +173,19 @@ func NewXovisConnector(userName, password, host string, port int, checkCert bool
 	return &Xovis{
 		basicAuth: encodeBase64(userName + ":" + password),
 		login:     Login{},
-		con: XovisHttp{
+		http: XovisHttp{
 			host:      host,
 			port:      strconv.Itoa(port),
-			timeOut:   requestTimeout,
+			timeout:   time.Duration(requestTimeout) * time.Second,
 			checkCert: checkCert,
 		},
 	}
 }
 
 func (x *Xovis) ResetAllCounters() error {
-	_, err := x.request(ResetAllCounterPath, http.MethodPost)
+	_, err := x.request(ResetAllCountersPath, http.MethodPost)
 	if err != nil {
-		log.Error(MODULE, "error resetting all counters: %v", err)
+		log.Error(module, "error resetting all counters: %v", err)
 	}
 	return err
 }
@@ -199,14 +196,14 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 
 	logics, err := x.getCountersRaw()
 	if err != nil {
-		log.Error(MODULE, "error getting counter data: %v", err)
+		log.Error(module, "error getting counter data: %v", err)
 		return nil, nil, err
 	}
 
 	for _, logic := range logics.Logics {
 		switch logic.Info {
 		case InfoTypeLine, InfoTypeLineLegacy:
-			lData := LineData{
+			lineData := LineData{
 				ForwardTotal:   -1,
 				BackwardTotal:  -1,
 				ForwardDiv:     0,
@@ -224,45 +221,45 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 			for _, count := range logic.Counts {
 				switch count.Name {
 				case "bw":
-					lData.BackwardTotal = count.Value
+					lineData.BackwardTotal = count.Value
 				case "fw":
-					lData.ForwardTotal = count.Value
+					lineData.ForwardTotal = count.Value
 				case "fw-male":
-					lData.ForwardMale = count.Value
+					lineData.ForwardMale = count.Value
 				case "bw-male":
-					lData.BackwardMale = count.Value
+					lineData.BackwardMale = count.Value
 				case "fw-female":
-					lData.ForwardFemale = count.Value
+					lineData.ForwardFemale = count.Value
 				case "bw-female":
-					lData.BackwardFemale = count.Value
+					lineData.BackwardFemale = count.Value
 				case "fw-mask":
-					lData.ForwardMask = count.Value
+					lineData.ForwardMask = count.Value
 				case "bw-mask":
-					lData.BackwardMask = count.Value
+					lineData.BackwardMask = count.Value
 				case "fw-no_mask":
-					lData.ForwardNoMask = count.Value
+					lineData.ForwardNoMask = count.Value
 				case "bw-no_mask":
-					lData.BackwardNoMask = count.Value
+					lineData.BackwardNoMask = count.Value
 				default:
-					log.Debug(MODULE, "unknown counter type: %v", count.Name)
+					log.Debug(module, "unknown counter type: %v", count.Name)
 				}
 			}
 
 			lines = append(lines, Line{
 				Name: logic.Name,
-				Id:   logic.Id,
+				ID:   logic.ID,
 				Time: logics.Time,
-				Data: lData,
+				Data: lineData,
 			})
 
 		case InfoTypeZone, InfoTypeZoneLegacy:
 			if len(logic.Counts) != 1 || logic.Counts[0].Name != "balance" {
-				log.Debug(MODULE, "unknown counter field in zone: %v", logic.Counts[0])
-				break
+				log.Debug(module, "unknown counter field in zone: %v", logic.Counts[0])
+				continue
 			}
 			zones = append(zones, Zone{
 				Name: logic.Name,
-				Id:   logic.Id,
+				ID:   logic.ID,
 				Time: logics.Time,
 				Data: ZoneData{
 					FillLevel:     logic.Counts[0].Value,
@@ -275,7 +272,7 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 			})
 
 		default:
-			log.Debug(MODULE, "unknown counter type: %v", logic.Info)
+			log.Debug(module, "unknown counter type: %v", logic.Info)
 		}
 	}
 
@@ -284,14 +281,13 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 
 func (x *Xovis) getCountersRaw() (Logics, error) {
 	var logics Logics
-	rawData, err := x.request(AllCounterPath, http.MethodGet)
+	rawData, err := x.request(AllCountersPath, http.MethodGet)
 	if err != nil {
-		log.Error(MODULE, "get counter data: %v", err)
+		log.Error(module, "error getting counter data: %v", err)
 		return logics, err
 	}
-	err = json.Unmarshal(rawData, &logics)
-	if err != nil {
-		log.Error(MODULE, "decode logics: %v", err)
+	if err := json.Unmarshal(rawData, &logics); err != nil {
+		log.Error(module, "error decoding logics: %v", err)
 		return logics, err
 	}
 	return logics, nil
@@ -302,14 +298,12 @@ func (x *Xovis) request(path, method string) ([]byte, error) {
 		"Authorization": "Basic " + x.basicAuth,
 		"Accept":        "application/json",
 	}
-
-	jsonBody, err := x.con.Request(method, path, headers)
+	jsonBody, err := x.http.Request(method, path, headers)
 	if err != nil {
 		x.login.LastUsedAt = 0
 		x.login.ReceivedAt = 0
 		return jsonBody, err
 	}
-
 	x.login.LastUsedAt = time.Now().Unix()
 	return jsonBody, nil
 }
@@ -317,7 +311,7 @@ func (x *Xovis) request(path, method string) ([]byte, error) {
 func (x *Xovis) isTokenValid() bool {
 	now := time.Now().Unix()
 	if x.login.ReceivedAt+int64(x.login.ValidFor) <= now+240 || x.login.LastUsedAt+int64(x.login.MaxUnusedFor) <= now+240 {
-		log.Debug(MODULE, "token expired")
+		log.Debug(module, "token expired")
 		return false
 	}
 	return true
