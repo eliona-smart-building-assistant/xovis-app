@@ -152,23 +152,23 @@ func (d *PeopleCounter) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (d *PeopleCounter) GetLocationalChildren() []asset.LocationalNode {
-	locationalChildren := make([]asset.LocationalNode, 0, len(d.Lines)+len(d.Zones))
-	for i := range d.Lines {
-		locationalChildren[i] = &d.Lines[i]
+	var locationalChildren []asset.LocationalNode
+	for _, l := range d.Lines {
+		locationalChildren = append(locationalChildren, &l)
 	}
-	for i := range d.Zones {
-		locationalChildren[i] = &d.Zones[i]
+	for _, z := range d.Zones {
+		locationalChildren = append(locationalChildren, &z)
 	}
 	return locationalChildren
 }
 
 func (d *PeopleCounter) GetFunctionalChildren() []asset.FunctionalNode {
-	functionalChildren := make([]asset.FunctionalNode, 0, len(d.Lines)+len(d.Zones))
-	for i := range d.Lines {
-		functionalChildren[i] = &d.Lines[i]
+	var functionalChildren []asset.FunctionalNode
+	for _, l := range d.Lines {
+		functionalChildren = append(functionalChildren, &l)
 	}
-	for i := range d.Zones {
-		functionalChildren[i] = &d.Zones[i]
+	for _, z := range d.Zones {
+		functionalChildren = append(functionalChildren, &z)
 	}
 	return functionalChildren
 }
@@ -176,7 +176,7 @@ func (d *PeopleCounter) GetFunctionalChildren() []asset.FunctionalNode {
 type Group struct {
 	Name string `eliona:"name" subtype:"info"`
 
-	sensors []PeopleCounter
+	Sensors []PeopleCounter
 
 	Config *confmodel.Configuration
 }
@@ -209,23 +209,23 @@ func (d *Group) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (d *Group) GetLocationalChildren() []asset.LocationalNode {
-	locationalChildren := make([]asset.LocationalNode, 0, len(d.sensors))
-	for i := range d.sensors {
-		locationalChildren[i] = &d.sensors[i]
+	locationalChildren := make([]asset.LocationalNode, len(d.Sensors))
+	for i := range d.Sensors {
+		locationalChildren[i] = &d.Sensors[i]
 	}
 	return locationalChildren
 }
 
 func (d *Group) GetFunctionalChildren() []asset.FunctionalNode {
-	functionalChildren := make([]asset.FunctionalNode, 0, len(d.sensors))
-	for i := range d.sensors {
-		functionalChildren[i] = &d.sensors[i]
+	functionalChildren := make([]asset.FunctionalNode, len(d.Sensors))
+	for i := range d.Sensors {
+		functionalChildren[i] = &d.Sensors[i]
 	}
 	return functionalChildren
 }
 
 type Root struct {
-	groups []Group
+	Groups []Group
 
 	Config *confmodel.Configuration
 }
@@ -258,17 +258,17 @@ func (r *Root) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (r *Root) GetLocationalChildren() []asset.LocationalNode {
-	locationalChildren := make([]asset.LocationalNode, 0, len(r.groups))
-	for i := range r.groups {
-		locationalChildren[i] = &r.groups[i]
+	locationalChildren := make([]asset.LocationalNode, len(r.Groups))
+	for i := range r.Groups {
+		locationalChildren[i] = &r.Groups[i]
 	}
 	return locationalChildren
 }
 
 func (r *Root) GetFunctionalChildren() []asset.FunctionalNode {
-	functionalChildren := make([]asset.FunctionalNode, 0, len(r.groups))
-	for i := range r.groups {
-		functionalChildren[i] = &r.groups[i]
+	functionalChildren := make([]asset.FunctionalNode, len(r.Groups))
+	for i := range r.Groups {
+		functionalChildren[i] = &r.Groups[i]
 	}
 	return functionalChildren
 }

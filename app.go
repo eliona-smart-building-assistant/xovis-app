@@ -25,6 +25,8 @@ import (
 	"xovis/apiservices"
 	"xovis/broker"
 	"xovis/conf"
+	"xovis/eliona"
+	assetmodel "xovis/model/asset"
 	confmodel "xovis/model/conf"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/app"
@@ -43,6 +45,13 @@ func initialization() {
 	// Necessary to close used init resources
 	conn := db.NewInitConnectionWithContextAndApplicationName(ctx, app.AppName())
 	defer conn.Close(ctx)
+
+	//todo: rm
+	err := asset.InitAssetTypeFiles("resources/asset-types/*.json")(conn)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	// Init the app before the first run.
 	app.Init(conn, app.AppName(),
@@ -120,8 +129,28 @@ func collectResources(sensor confmodel.Sensor) error {
 		log.Error("broker", "getting all counters: %v", err)
 		return err
 	}
-	fmt.Println(peopleCounter)
-	// Do the magic here
+
+	// todo: unmock this
+	group := assetmodel.Group{
+		Name:    "Grop",
+		Config:  &sensor.Config,
+		Sensors: []assetmodel.PeopleCounter{peopleCounter},
+	}
+	root := assetmodel.Root{
+		Groups: []assetmodel.Group{group},
+		Config: &sensor.Config,
+	}
+
+	if err := eliona.CreateAssets(sensor.Config, &root); err != nil {
+		log.Error("eliona", "creating assets: %v", err)
+		return err
+	}
+
+	if err := eliona.UpsertAssetData(sensor.Config, group.Sensors); err != nil {
+		log.Error("eliona", "upserting asset data: %v", err)
+		return err
+	}
+
 	return nil
 }
 

@@ -1,0 +1,12 @@
+{
+	"attributes": [
+	],
+	"custom": true,
+	"name": "xovis_root",
+	"translation": {
+		"de": "Xovis Root",
+		"en": "Xovis Root"
+	},
+	"urldoc": "https://doc.eliona.io/collection/v/eliona-english/eliona-apps/apps/xovis",
+	"vendor": "Xovis AG"
+}
