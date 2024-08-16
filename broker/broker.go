@@ -25,6 +25,7 @@ import (
 	"strconv"
 	"time"
 	assetmodel "xovis/model/asset"
+	confmodel "xovis/model/conf"
 
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
@@ -147,21 +148,23 @@ type Login struct {
 }
 
 type Xovis struct {
-	basicAuth string
-	http      XovisHttp
-	login     Login
+	basicAuth  string
+	http       XovisHttp
+	login      Login
+	sensorConf confmodel.Sensor
 }
 
-func NewXovisConnector(userName, password, host string, port int, checkCert bool, requestTimeout int) *Xovis {
+func NewXovisConnector(sensorConf confmodel.Sensor) *Xovis {
 	return &Xovis{
-		basicAuth: encodeBase64(userName + ":" + password),
+		basicAuth: encodeBase64(sensorConf.Username + ":" + sensorConf.Password),
 		login:     Login{},
 		http: XovisHttp{
-			host:      host,
-			port:      strconv.Itoa(port),
-			timeout:   time.Duration(requestTimeout) * time.Second,
-			checkCert: checkCert,
+			host:      sensorConf.Hostname,
+			port:      strconv.Itoa(int(sensorConf.Port)),
+			timeout:   time.Duration(sensorConf.Config.RequestTimeout) * time.Second,
+			checkCert: sensorConf.Config.CheckCertificate,
 		},
+		sensorConf: sensorConf,
 	}
 }
 
@@ -197,10 +200,11 @@ func (x *Xovis) GetDevice() (assetmodel.PeopleCounter, error) {
 	}
 
 	return assetmodel.PeopleCounter{
-		Name:  idResponse.Name,
-		Group: idResponse.Group,
-		MAC:   deviceInfoResponse.MAC,
-		Model: deviceInfoResponse.Type,
+		Name:   idResponse.Name,
+		Group:  idResponse.Group,
+		MAC:    deviceInfoResponse.MAC,
+		Model:  deviceInfoResponse.Type,
+		Config: &x.sensorConf.Config,
 	}, nil
 }
 
@@ -245,6 +249,7 @@ func (x *Xovis) GetAllCounters() ([]assetmodel.Line, []assetmodel.Zone, error) {
 				ID:       logic.ID,
 				Forward:  lineData.ForwardTotal,
 				Backward: lineData.BackwardTotal,
+				Config:   &x.sensorConf.Config,
 			})
 
 		case InfoTypeZone, InfoTypeZoneLegacy:
@@ -256,6 +261,7 @@ func (x *Xovis) GetAllCounters() ([]assetmodel.Line, []assetmodel.Zone, error) {
 				Name:     logic.Name,
 				ID:       logic.ID,
 				Presence: logic.Counts[0].Value,
+				Config:   &x.sensorConf.Config,
 			})
 
 		default:
