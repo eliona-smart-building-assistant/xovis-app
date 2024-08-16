@@ -25,7 +25,7 @@ import (
 )
 
 type Zone struct {
-	ID       string `eliona:"id" subtype:"info"`
+	ID       int    `eliona:"id" subtype:"info"`
 	Name     string `eliona:"name" subtype:"info"`
 	Presence int    `eliona:"presence" subtype:"input"`
 
@@ -45,7 +45,7 @@ func (d *Zone) GetAssetType() string {
 }
 
 func (d *Zone) GetGAI() string {
-	return d.GetAssetType() + "_" + d.ID
+	return d.GetAssetType() + "_" + string(d.ID)
 }
 
 func (d *Zone) GetAssetID(projectID string) (*int32, error) {
@@ -53,7 +53,7 @@ func (d *Zone) GetAssetID(projectID string) (*int32, error) {
 }
 
 func (d *Zone) SetAssetID(assetID int32, projectID string) error {
-	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, d.ID); err != nil {
+	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, string(d.ID)); err != nil {
 		return fmt.Errorf("inserting asset to config db: %v", err)
 	}
 	return nil
@@ -68,10 +68,10 @@ func (d *Zone) GetFunctionalChildren() []asset.FunctionalNode {
 }
 
 type Line struct {
-	ID       string `eliona:"id" subtype:"info"`
+	ID       int    `eliona:"id" subtype:"info"`
 	Name     string `eliona:"name" subtype:"info"`
-	Forward  string `eliona:"forward" subtype:"input"`
-	Backward string `eliona:"backward" subtype:"input"`
+	Forward  int    `eliona:"forward" subtype:"input"`
+	Backward int    `eliona:"backward" subtype:"input"`
 
 	Config *confmodel.Configuration
 }
@@ -89,7 +89,7 @@ func (d *Line) GetAssetType() string {
 }
 
 func (d *Line) GetGAI() string {
-	return d.GetAssetType() + "_" + d.ID
+	return d.GetAssetType() + "_" + string(d.ID)
 }
 
 func (d *Line) GetAssetID(projectID string) (*int32, error) {
@@ -97,7 +97,7 @@ func (d *Line) GetAssetID(projectID string) (*int32, error) {
 }
 
 func (d *Line) SetAssetID(assetID int32, projectID string) error {
-	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, d.ID); err != nil {
+	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, string(d.ID)); err != nil {
 		return fmt.Errorf("inserting asset to config db: %v", err)
 	}
 	return nil

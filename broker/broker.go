@@ -212,9 +212,9 @@ func (x *Xovis) ResetAllCounters() error {
 	return nil
 }
 
-func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
-	var lines []Line
-	var zones []Zone
+func (x *Xovis) GetAllCounters() ([]assetmodel.Line, []assetmodel.Zone, error) {
+	var lines []assetmodel.Line
+	var zones []assetmodel.Zone
 
 	logics, err := x.getCountersRaw()
 	if err != nil {
@@ -240,11 +240,11 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 				}
 			}
 
-			lines = append(lines, Line{
-				Name: logic.Name,
-				ID:   logic.ID,
-				Time: logics.Time,
-				Data: lineData,
+			lines = append(lines, assetmodel.Line{
+				Name:     logic.Name,
+				ID:       logic.ID,
+				Forward:  lineData.ForwardTotal,
+				Backward: lineData.BackwardTotal,
 			})
 
 		case InfoTypeZone, InfoTypeZoneLegacy:
@@ -252,13 +252,10 @@ func (x *Xovis) GetAllCounters() ([]Line, []Zone, error) {
 				log.Debug(module, "unknown counter field in zone: %v", logic.Counts[0])
 				continue
 			}
-			zones = append(zones, Zone{
-				Name: logic.Name,
-				ID:   logic.ID,
-				Time: logics.Time,
-				Data: ZoneData{
-					FillLevel: logic.Counts[0].Value,
-				},
+			zones = append(zones, assetmodel.Zone{
+				Name:     logic.Name,
+				ID:       logic.ID,
+				Presence: logic.Counts[0].Value,
 			})
 
 		default:
