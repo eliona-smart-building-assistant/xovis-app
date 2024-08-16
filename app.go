@@ -110,12 +110,19 @@ func collectData() {
 
 func collectResources(sensor confmodel.Sensor) error {
 	xovis := broker.NewXovisConnector(sensor.Username, sensor.Password, sensor.Hostname, int(sensor.Port), sensor.Config.CheckCertificate, int(sensor.Config.RequestTimeout))
+	peopleCounter, err := xovis.GetDevice()
+	if err != nil {
+		log.Error("broker", "getting peopleCounter: %v", err)
+		return err
+	}
+	peopleCounter.Config = &sensor.Config
 	lines, zones, err := xovis.GetAllCounters()
 	if err != nil {
 		log.Error("broker", "getting all counters: %v", err)
 		return err
 	}
 	fmt.Println(lines, zones)
+	fmt.Println(peopleCounter)
 	// Do the magic here
 	return nil
 }

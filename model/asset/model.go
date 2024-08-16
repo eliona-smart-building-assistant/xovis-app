@@ -115,10 +115,11 @@ type PeopleCounter struct {
 	MAC   string `eliona:"mac" subtype:"info"`
 	Name  string `eliona:"name" subtype:"info"`
 	Model string `eliona:"model" subtype:"info"`
-	IP    string `eliona:"ip" subtype:"info"`
 
-	lines []Line
-	zones []Zone
+	Group string // Group name used just for pairing
+
+	Lines []Line
+	Zones []Zone
 
 	Config *confmodel.Configuration
 }
@@ -151,23 +152,23 @@ func (d *PeopleCounter) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (d *PeopleCounter) GetLocationalChildren() []asset.LocationalNode {
-	locationalChildren := make([]asset.LocationalNode, 0, len(d.lines)+len(d.zones))
-	for i := range d.lines {
-		locationalChildren[i] = &d.lines[i]
+	locationalChildren := make([]asset.LocationalNode, 0, len(d.Lines)+len(d.Zones))
+	for i := range d.Lines {
+		locationalChildren[i] = &d.Lines[i]
 	}
-	for i := range d.zones {
-		locationalChildren[i] = &d.zones[i]
+	for i := range d.Zones {
+		locationalChildren[i] = &d.Zones[i]
 	}
 	return locationalChildren
 }
 
 func (d *PeopleCounter) GetFunctionalChildren() []asset.FunctionalNode {
-	functionalChildren := make([]asset.FunctionalNode, 0, len(d.lines)+len(d.zones))
-	for i := range d.lines {
-		functionalChildren[i] = &d.lines[i]
+	functionalChildren := make([]asset.FunctionalNode, 0, len(d.Lines)+len(d.Zones))
+	for i := range d.Lines {
+		functionalChildren[i] = &d.Lines[i]
 	}
-	for i := range d.zones {
-		functionalChildren[i] = &d.zones[i]
+	for i := range d.Zones {
+		functionalChildren[i] = &d.Zones[i]
 	}
 	return functionalChildren
 }

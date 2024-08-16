@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	assetmodel "xovis/model/asset"
 
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
@@ -162,6 +163,45 @@ func NewXovisConnector(userName, password, host string, port int, checkCert bool
 			checkCert: checkCert,
 		},
 	}
+}
+
+type idResponse struct {
+	Group string `json:"group"`
+	Name  string `json:"name"`
+}
+
+type deviceInfoResponse struct {
+	MAC  string `json:"serial"`
+	Type string `json:"type"`
+}
+
+func (x *Xovis) GetDevice() (assetmodel.PeopleCounter, error) {
+	resp, err := x.http.Request(http.MethodGet, ApiPath+"/device/id", nil)
+	if err != nil {
+		return assetmodel.PeopleCounter{}, fmt.Errorf("making request to get device id: %w", err)
+	}
+
+	var idResponse idResponse
+	if err := json.Unmarshal(resp, &idResponse); err != nil {
+		return assetmodel.PeopleCounter{}, fmt.Errorf("parsing device id response: %w", err)
+	}
+
+	resp, err = x.http.Request(http.MethodGet, ApiPath+"/device/info", nil)
+	if err != nil {
+		return assetmodel.PeopleCounter{}, fmt.Errorf("making request to get device info: %w", err)
+	}
+
+	var deviceInfoResponse deviceInfoResponse
+	if err := json.Unmarshal(resp, &deviceInfoResponse); err != nil {
+		return assetmodel.PeopleCounter{}, fmt.Errorf("parsing device info response: %w", err)
+	}
+
+	return assetmodel.PeopleCounter{
+		Name:  idResponse.Name,
+		Group: idResponse.Group,
+		MAC:   deviceInfoResponse.MAC,
+		Model: deviceInfoResponse.Type,
+	}, nil
 }
 
 func (x *Xovis) ResetAllCounters() error {
