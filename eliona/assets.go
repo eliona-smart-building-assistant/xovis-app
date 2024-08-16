@@ -17,6 +17,7 @@ package eliona
 
 import (
 	"fmt"
+	"time"
 	confmodel "xovis/model/conf"
 
 	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
@@ -25,9 +26,11 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
-func CreateAssets(config confmodel.Configuration, root asset.Root) error {
+func CreateAssetsAndUpsertData(config confmodel.Configuration, root asset.Root) error {
+	cr := ClientReference
+	now := time.Now()
 	for _, projectId := range config.ProjectIDs {
-		assetsCreated, err := asset.CreateAssets(root, projectId)
+		assetsCreated, err := asset.CreateAssetsAndUpsertData(root, projectId, &now, &cr)
 		if err != nil {
 			return err
 		}

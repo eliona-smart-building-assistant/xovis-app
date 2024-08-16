@@ -141,13 +141,8 @@ func collectResources(sensor confmodel.Sensor) error {
 		Config: &sensor.Config,
 	}
 
-	if err := eliona.CreateAssets(sensor.Config, &root); err != nil {
+	if err := eliona.CreateAssetsAndUpsertData(sensor.Config, &root); err != nil {
 		log.Error("eliona", "creating assets: %v", err)
-		return err
-	}
-
-	if err := eliona.UpsertAssetData(sensor.Config, group.Sensors); err != nil {
-		log.Error("eliona", "upserting asset data: %v", err)
 		return err
 	}
 
