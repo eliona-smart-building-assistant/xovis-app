@@ -225,7 +225,7 @@ func (d *Group) GetFunctionalChildren() []asset.FunctionalNode {
 }
 
 type Root struct {
-	Groups []Group
+	Groups map[string]Group
 
 	Config *confmodel.Configuration
 }
@@ -259,16 +259,18 @@ func (r *Root) SetAssetID(assetID int32, projectID string) error {
 
 func (r *Root) GetLocationalChildren() []asset.LocationalNode {
 	locationalChildren := make([]asset.LocationalNode, len(r.Groups))
-	for i := range r.Groups {
-		locationalChildren[i] = &r.Groups[i]
+	for _, group := range r.Groups {
+		groupCpy := group
+		locationalChildren = append(locationalChildren, &groupCpy)
 	}
 	return locationalChildren
 }
 
 func (r *Root) GetFunctionalChildren() []asset.FunctionalNode {
 	functionalChildren := make([]asset.FunctionalNode, len(r.Groups))
-	for i := range r.Groups {
-		functionalChildren[i] = &r.Groups[i]
+	for _, group := range r.Groups {
+		groupCpy := group
+		functionalChildren = append(functionalChildren, &groupCpy)
 	}
 	return functionalChildren
 }

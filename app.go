@@ -98,50 +98,58 @@ func collectData() {
 				config.ProjectIDs)
 		}
 
-		sensors, err := conf.GetSensorsOfConfig(context.Background(), config.ID)
-		if err != nil {
-			log.Fatal("conf", "Couldn't read sensors from DB: %v", err)
-			return
-		}
-		for _, sensor := range sensors {
-			common.RunOnceWithParam(func(sensor confmodel.Sensor) {
-				log.Info("main", "Collecting %d started.", sensor.ID)
-				if err := collectResources(sensor); err != nil {
-					return // Error is handled in the method itself.
-				}
-				log.Info("main", "Collecting %d finished.", sensor.ID)
+		common.RunOnceWithParam(func(config confmodel.Configuration) {
+			log.Info("main", "Collecting %d started.", config.ID)
+			if err := collectResources(config); err != nil {
+				return // Error is handled in the method itself.
+			}
+			log.Info("main", "Collecting %d finished.", config.ID)
 
-				time.Sleep(time.Second * time.Duration(config.RefreshInterval))
-			}, sensor, sensor.ID)
-		}
+			time.Sleep(time.Second * time.Duration(config.RefreshInterval))
+		}, config, config.ID)
+
 	}
 }
 
-func collectResources(sensor confmodel.Sensor) error {
-	xovis := broker.NewXovisConnector(sensor)
-	peopleCounter, err := xovis.GetDevice()
+func collectResources(config confmodel.Configuration) error {
+	sensors, err := conf.GetSensorsOfConfig(context.Background(), config.ID)
 	if err != nil {
-		log.Error("broker", "getting peopleCounter: %v", err)
-		return err
-	}
-	peopleCounter.Lines, peopleCounter.Zones, err = xovis.GetAllCounters()
-	if err != nil {
-		log.Error("broker", "getting all counters: %v", err)
+		log.Error("conf", "Couldn't read sensors from DB: %v", err)
 		return err
 	}
 
-	// todo: unmock this
-	group := assetmodel.Group{
-		Name:    "Grop",
-		Config:  &sensor.Config,
-		Sensors: []assetmodel.PeopleCounter{peopleCounter},
-	}
 	root := assetmodel.Root{
-		Groups: []assetmodel.Group{group},
-		Config: &sensor.Config,
+		Groups: map[string]assetmodel.Group{},
+		Config: &config,
+	}
+	for _, sensor := range sensors {
+		xovis := broker.NewXovisConnector(sensor)
+		peopleCounter, err := xovis.GetDevice()
+		if err != nil {
+			log.Error("broker", "getting peopleCounter: %v", err)
+			return err
+		}
+		peopleCounter.Lines, peopleCounter.Zones, err = xovis.GetAllCounters()
+		if err != nil {
+			log.Error("broker", "getting all counters: %v", err)
+			return err
+		}
+
+		groupName := peopleCounter.Group
+		group, ok := root.Groups[groupName]
+		if !ok {
+			group = assetmodel.Group{
+				Name:    groupName,
+				Sensors: []assetmodel.PeopleCounter{},
+				Config:  &config,
+			}
+		}
+
+		group.Sensors = append(group.Sensors, peopleCounter)
+		root.Groups[groupName] = group
 	}
 
-	if err := eliona.CreateAssetsAndUpsertData(sensor.Config, &root); err != nil {
+	if err := eliona.CreateAssetsAndUpsertData(config, &root); err != nil {
 		log.Error("eliona", "creating assets: %v", err)
 		return err
 	}
