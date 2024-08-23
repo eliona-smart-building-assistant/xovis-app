@@ -99,6 +99,16 @@ func collectData() {
 		}
 
 		common.RunOnceWithParam(func(config confmodel.Configuration) {
+			log.Info("main", "Discovering %d started.", config.ID)
+			if err := discoverDevices(config); err != nil {
+				return // Error is handled in the method itself.
+			}
+			log.Info("main", "Discovering %d finished.", config.ID)
+
+			time.Sleep(time.Second * 100 * time.Duration(config.RefreshInterval))
+		}, config, fmt.Sprintf("discovery %d", config.ID))
+
+		common.RunOnceWithParam(func(config confmodel.Configuration) {
 			log.Info("main", "Collecting %d started.", config.ID)
 			if err := collectResources(config); err != nil {
 				return // Error is handled in the method itself.
@@ -107,8 +117,33 @@ func collectData() {
 
 			time.Sleep(time.Second * time.Duration(config.RefreshInterval))
 		}, config, config.ID)
-
 	}
+}
+
+func discoverDevices(config confmodel.Configuration) error {
+	sensors, err := conf.GetSensorsOfConfig(context.Background(), config.ID)
+	if err != nil {
+		log.Error("conf", "Couldn't read sensors from DB: %v", err)
+		return err
+	}
+
+	for _, sensor := range sensors {
+		xovis := broker.NewXovisConnector(sensor)
+		discovereds, err := xovis.DiscoverDevices()
+		if err != nil {
+			log.Error("broker", "discovering devices: %v", err)
+			return err
+		}
+
+		for _, discovered := range discovereds {
+			if _, err := conf.UpsertSensorDiscovery(context.Background(), discovered); err != nil {
+				log.Error("conf", "upserting discovered sensor %+v: %v", discovered, err)
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func collectResources(config confmodel.Configuration) error {

@@ -167,10 +167,128 @@ func NewXovisConnector(sensorConf confmodel.Sensor) *Xovis {
 		sensorConf: sensorConf,
 	}
 }
+func (x *Xovis) DiscoverDevices() ([]confmodel.Sensor, error) {
+	var resp []byte
+	var err error
+	switch x.sensorConf.DiscoveryMode {
+	case "L2":
+		resp, err = x.http.Request(http.MethodGet, ApiPath+"/discover/localnetwork", nil)
+		if err != nil {
+			return nil, fmt.Errorf("making L2 request: %w", err)
+		}
+	case "L3":
+		if x.sensorConf.L3FirstIP == nil || x.sensorConf.L3Count == nil {
+			return nil, fmt.Errorf("L3 discovery mode requires L3FirstIP and L3Count to be set")
+		}
+		body := map[string]string{
+			"first_ip": *x.sensorConf.L3FirstIP,
+			"count":    string(*x.sensorConf.L3Count),
+		}
+		resp, err = x.http.Request(http.MethodPost, ApiPath+"/discover/scan", body)
+		if err != nil {
+			return nil, fmt.Errorf("making L3 request: %w", err)
+		}
+	case "disabled":
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unknown discovery mode: %s", x.sensorConf.DiscoveryMode)
+	}
+
+	deviceItself, err := x.getDeviceInfo()
+	if err != nil {
+		return nil, fmt.Errorf("making request to get the device itself: %w", err)
+	}
+
+	var discoveryResult struct {
+		Sensors []struct {
+			MAC   string   `json:"mac"`
+			IP    string   `json:"ip"`
+			IPv6  []string `json:"ipv6"`
+			Ports []struct {
+				Number  int32  `json:"number"`
+				Service string `json:"service"`
+			} `json:"ports"`
+			Model     string `json:"model"`
+			Name      string `json:"name"`
+			Group     string `json:"group"`
+			FWVersion string `json:"fw_version"`
+		} `json:"sensors"`
+	}
+
+	if err := json.Unmarshal(resp, &discoveryResult); err != nil {
+		return nil, fmt.Errorf("parsing discovery response: %w", err)
+	}
+
+	var sensors []confmodel.Sensor
+	for _, responseSensor := range discoveryResult.Sensors {
+		hostname := responseSensor.IP
+		if hostname == "" && len(responseSensor.IPv6) > 0 {
+			hostname = responseSensor.IPv6[0]
+		}
+		port := int32(443)
+		for _, p := range responseSensor.Ports {
+			if p.Service == "https" {
+				port = p.Number
+			}
+		}
+		sensor := confmodel.Sensor{
+			Config:        x.sensorConf.Config,
+			Username:      x.sensorConf.Username,
+			Password:      x.sensorConf.Password,
+			Hostname:      hostname,
+			Port:          port,
+			DiscoveryMode: "disabled", // no value in discovering devices in the same range
+			MACAddress:    &responseSensor.MAC,
+		}
+
+		// We need to identify the device itself to avoid overwriting it.
+		if responseSensor.MAC == deviceItself.MAC {
+			sensor.ID = x.sensorConf.ID
+		}
+
+		sensors = append(sensors, sensor)
+	}
+
+	return sensors, nil
+}
+
+func (x *Xovis) GetDevice() (assetmodel.PeopleCounter, error) {
+	idResp, err := x.getDeviceID()
+	if err != nil {
+		return assetmodel.PeopleCounter{}, err
+	}
+
+	deviceInfoResp, err := x.getDeviceInfo()
+	if err != nil {
+		return assetmodel.PeopleCounter{}, err
+	}
+
+	return assetmodel.PeopleCounter{
+		Name:   idResp.Name,
+		Group:  idResp.Group,
+		MAC:    deviceInfoResp.MAC,
+		Model:  deviceInfoResp.Type,
+		Config: &x.sensorConf.Config,
+	}, nil
+}
 
 type idResponse struct {
 	Group string `json:"group"`
 	Name  string `json:"name"`
+}
+
+func (x *Xovis) getDeviceID() (idResponse, error) {
+	resp, err := x.http.Request(http.MethodGet, ApiPath+"/device/id", nil)
+	if err != nil {
+		return idResponse{}, fmt.Errorf("making request to get device id: %w", err)
+	}
+
+	var idResp idResponse
+	if err := json.Unmarshal(resp, &idResp); err != nil {
+		return idResponse{}, fmt.Errorf("parsing device id response: %w", err)
+	}
+
+	return idResp, nil
 }
 
 type deviceInfoResponse struct {
@@ -178,34 +296,18 @@ type deviceInfoResponse struct {
 	Type string `json:"type"`
 }
 
-func (x *Xovis) GetDevice() (assetmodel.PeopleCounter, error) {
-	resp, err := x.http.Request(http.MethodGet, ApiPath+"/device/id", nil)
+func (x *Xovis) getDeviceInfo() (deviceInfoResponse, error) {
+	resp, err := x.http.Request(http.MethodGet, ApiPath+"/device/info", nil)
 	if err != nil {
-		return assetmodel.PeopleCounter{}, fmt.Errorf("making request to get device id: %w", err)
+		return deviceInfoResponse{}, fmt.Errorf("making request to get device info: %w", err)
 	}
 
-	var idResponse idResponse
-	if err := json.Unmarshal(resp, &idResponse); err != nil {
-		return assetmodel.PeopleCounter{}, fmt.Errorf("parsing device id response: %w", err)
+	var deviceInfoResp deviceInfoResponse
+	if err := json.Unmarshal(resp, &deviceInfoResp); err != nil {
+		return deviceInfoResponse{}, fmt.Errorf("parsing device info response: %w", err)
 	}
 
-	resp, err = x.http.Request(http.MethodGet, ApiPath+"/device/info", nil)
-	if err != nil {
-		return assetmodel.PeopleCounter{}, fmt.Errorf("making request to get device info: %w", err)
-	}
-
-	var deviceInfoResponse deviceInfoResponse
-	if err := json.Unmarshal(resp, &deviceInfoResponse); err != nil {
-		return assetmodel.PeopleCounter{}, fmt.Errorf("parsing device info response: %w", err)
-	}
-
-	return assetmodel.PeopleCounter{
-		Name:   idResponse.Name,
-		Group:  idResponse.Group,
-		MAC:    deviceInfoResponse.MAC,
-		Model:  deviceInfoResponse.Type,
-		Config: &x.sensorConf.Config,
-	}, nil
+	return deviceInfoResp, nil
 }
 
 func (x *Xovis) ResetAllCounters() error {

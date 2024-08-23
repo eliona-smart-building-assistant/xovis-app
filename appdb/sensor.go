@@ -33,6 +33,7 @@ type Sensor struct {
 	DiscoveryMode   string      `boil:"discovery_mode" json:"discovery_mode" toml:"discovery_mode" yaml:"discovery_mode"`
 	L3FirstIP       null.String `boil:"l3_first_ip" json:"l3_first_ip,omitempty" toml:"l3_first_ip" yaml:"l3_first_ip,omitempty"`
 	L3Count         null.Int32  `boil:"l3_count" json:"l3_count,omitempty" toml:"l3_count" yaml:"l3_count,omitempty"`
+	MacAddress      null.String `boil:"mac_address" json:"mac_address,omitempty" toml:"mac_address" yaml:"mac_address,omitempty"`
 
 	R *sensorR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L sensorL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -48,6 +49,7 @@ var SensorColumns = struct {
 	DiscoveryMode   string
 	L3FirstIP       string
 	L3Count         string
+	MacAddress      string
 }{
 	ID:              "id",
 	ConfigurationID: "configuration_id",
@@ -58,6 +60,7 @@ var SensorColumns = struct {
 	DiscoveryMode:   "discovery_mode",
 	L3FirstIP:       "l3_first_ip",
 	L3Count:         "l3_count",
+	MacAddress:      "mac_address",
 }
 
 var SensorTableColumns = struct {
@@ -70,6 +73,7 @@ var SensorTableColumns = struct {
 	DiscoveryMode   string
 	L3FirstIP       string
 	L3Count         string
+	MacAddress      string
 }{
 	ID:              "sensor.id",
 	ConfigurationID: "sensor.configuration_id",
@@ -80,6 +84,7 @@ var SensorTableColumns = struct {
 	DiscoveryMode:   "sensor.discovery_mode",
 	L3FirstIP:       "sensor.l3_first_ip",
 	L3Count:         "sensor.l3_count",
+	MacAddress:      "sensor.mac_address",
 }
 
 // Generated where
@@ -144,6 +149,7 @@ var SensorWhere = struct {
 	DiscoveryMode   whereHelperstring
 	L3FirstIP       whereHelpernull_String
 	L3Count         whereHelpernull_Int32
+	MacAddress      whereHelpernull_String
 }{
 	ID:              whereHelperint64{field: "\"xovis\".\"sensor\".\"id\""},
 	ConfigurationID: whereHelperint64{field: "\"xovis\".\"sensor\".\"configuration_id\""},
@@ -154,6 +160,7 @@ var SensorWhere = struct {
 	DiscoveryMode:   whereHelperstring{field: "\"xovis\".\"sensor\".\"discovery_mode\""},
 	L3FirstIP:       whereHelpernull_String{field: "\"xovis\".\"sensor\".\"l3_first_ip\""},
 	L3Count:         whereHelpernull_Int32{field: "\"xovis\".\"sensor\".\"l3_count\""},
+	MacAddress:      whereHelpernull_String{field: "\"xovis\".\"sensor\".\"mac_address\""},
 }
 
 // SensorRels is where relationship names are stored.
@@ -184,9 +191,9 @@ func (r *sensorR) GetConfiguration() *Configuration {
 type sensorL struct{}
 
 var (
-	sensorAllColumns            = []string{"id", "configuration_id", "username", "password", "hostname", "port", "discovery_mode", "l3_first_ip", "l3_count"}
+	sensorAllColumns            = []string{"id", "configuration_id", "username", "password", "hostname", "port", "discovery_mode", "l3_first_ip", "l3_count", "mac_address"}
 	sensorColumnsWithoutDefault = []string{"username", "password", "hostname", "port", "discovery_mode"}
-	sensorColumnsWithDefault    = []string{"id", "configuration_id", "l3_first_ip", "l3_count"}
+	sensorColumnsWithDefault    = []string{"id", "configuration_id", "l3_first_ip", "l3_count", "mac_address"}
 	sensorPrimaryKeyColumns     = []string{"id"}
 	sensorGeneratedColumns      = []string{}
 )

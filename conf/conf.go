@@ -160,8 +160,19 @@ func UpsertSensor(ctx context.Context, sensor confmodel.Sensor) (confmodel.Senso
 	if err != nil {
 		return confmodel.Sensor{}, fmt.Errorf("creating DB sensor from App sensor: %v", err)
 	}
-	if err := dbSensor.UpsertG(ctx, true, []string{"id"}, boil.Blacklist("id"), boil.Infer()); err != nil {
+	if err := dbSensor.UpsertG(ctx, true, []string{"id", "mac_address"}, boil.Blacklist("id"), boil.Infer()); err != nil {
 		return confmodel.Sensor{}, fmt.Errorf("upserting DB sensor: %v", err)
+	}
+	return sensor, nil
+}
+
+func UpsertSensorDiscovery(ctx context.Context, sensor confmodel.Sensor) (confmodel.Sensor, error) {
+	dbSensor, err := toDbSensor(ctx, sensor)
+	if err != nil {
+		return confmodel.Sensor{}, fmt.Errorf("creating DB sensor from App sensor: %v", err)
+	}
+	if err := dbSensor.UpsertG(ctx, true, []string{"id", "mac_address"}, boil.Whitelist("mac_address"), boil.Infer()); err != nil {
+		return confmodel.Sensor{}, fmt.Errorf("upserting DB sensor from discovery: %v", err)
 	}
 	return sensor, nil
 }
@@ -246,6 +257,7 @@ func toDbSensor(ctx context.Context, appSensor confmodel.Sensor) (appdb.Sensor, 
 		DiscoveryMode:   appSensor.DiscoveryMode,
 		L3FirstIP:       null.StringFromPtr(appSensor.L3FirstIP),
 		L3Count:         null.Int32FromPtr(appSensor.L3Count),
+		MacAddress:      null.StringFromPtr(appSensor.MACAddress),
 	}
 
 	return dbSensor, nil
@@ -272,6 +284,10 @@ func toAppSensor(ctx context.Context, dbSensor *appdb.Sensor) (confmodel.Sensor,
 	}
 	if dbSensor.L3Count.Valid {
 		appSensor.L3Count = &dbSensor.L3Count.Int32
+	}
+
+	if dbSensor.MacAddress.Valid {
+		appSensor.MACAddress = &dbSensor.MacAddress.String
 	}
 
 	return appSensor, nil

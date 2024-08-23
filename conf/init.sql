@@ -40,7 +40,9 @@ create table if not exists xovis.sensor
 
 	discovery_mode       TEXT NOT NULL CHECK (discovery_mode IN ('disabled', 'L2', 'L3')),
 	l3_first_ip          TEXT,  -- For L3 discovery, the starting IP to scan
-	l3_count             INT   -- For L3 discovery, the number of IPs to scan
+	l3_count             INT,   -- For L3 discovery, the number of IPs to scan
+
+	mac_address text unique
 );
 
 create table if not exists xovis.asset

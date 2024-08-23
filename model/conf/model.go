@@ -37,6 +37,8 @@ type Sensor struct {
 	DiscoveryMode string
 	L3FirstIP     *string
 	L3Count       *int32
+
+	MACAddress *string
 }
 
 type Asset struct {
