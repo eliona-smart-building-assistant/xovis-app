@@ -58,13 +58,43 @@ Example configuration JSON:
 
 ## Continuous Asset Creation
 
-Once configured, the app starts Continuous Asset Creation (CAC). Discovered resources are automatically created as assets in Eliona, and users are notified via Eliona’s notification system.
+### Xovis Sensor Discovery and Configuration
 
-<mark>TODO: Describe what resources are created, the hierarchy and the data points.</mark>
+To add Xovis sensors to the Eliona application, follow these guidelines:
 
-## Additional Features
+#### **Initial Configuration**
 
-<mark>TODO: Describe all other features of the app.</mark>
+1. **Manual Sensor Configuration**:
+   - At least one Xovis sensor must be configured manually in the Eliona app. This sensor will serve as the discovery device, responsible for finding other Xovis sensors on the network.
+
+#### **Sensor Discovery Methods**
+
+Xovis sensors support two methods for discovering other sensors on the network:
+
+1. **Layer 2 (L2) Discovery**:
+   - **Description**: This method scans the sensor’s own subnet (e.g., 192.168.1.0/24) to find other Xovis devices.
+   - **Configuration**: No additional configuration is required for L2 discovery.
+
+2. **Layer 3 (L3) Discovery**:
+   - **Description**: This method performs an active scan across a specified IP range to identify Xovis devices. It is useful for discovering devices beyond the local subnet.
+   - **Configuration**: Requires configuration of the following:
+     - **First IP Address**: The starting IP address for the scan.
+     - **IP Count**: The number of IP addresses to scan.
+
+#### **Continuous Asset Creation (CAC)**
+
+- **Automatic Asset Creation**: Once the discovery configuration is set, the application will initiate Continuous Asset Creation (CAC). Discovered sensors are automatically added as assets in Eliona.
+- **Notifications**: Users will be notified through Eliona’s notification system when new assets are created.
+
+#### **Handling NAT and Address Modifications**
+
+- **Outside NAT**: If the application is running outside the company's NAT, discovered addresses and ports may not correspond to the correct external addresses.
+- **Address Modifications**: Adjust the app configuration to reflect the correct external addresses if necessary.
+
+#### **Password Management**
+
+- **Default Passwords**: The application assumes that all discovered devices use the same password as the dicsovering device.
+- **Individual Passwords**: If devices use unique passwords, update the configuration for each device accordingly.
 
 ### Dashboard templates
 
