@@ -22,69 +22,120 @@ Create credentials in Xovis Service to connect the Xovis services from Eliona. A
 
 <mark>TODO: Describe the steps where you can get or create the necessary credentials.</mark> 
 
-### Configure the Xovis app 
+## Xovis App Configuration and Sensor Discovery Workflow
 
-Configurations can be created in Eliona under `Apps > Xovis > Settings` which opens the app's [Generic Frontend](https://doc.eliona.io/collection/v/eliona-english/manuals/settings/apps). Here you can use the appropriate endpoint with the POST method. Each configuration requires the following data:
+Configurations can be created in Eliona under `Apps > Xovis > Settings` which opens the app's [Generic Frontend](https://doc.eliona.io/collection/v/eliona-english/manuals/settings/apps). Below is the complete workflow to guide you through configuring Xovis devices and sensors.
 
-| Attribute         | Description                                                                     |
-|-------------------|---------------------------------------------------------------------------------|
-| `username`         | Xovis device username.                                                   |
-| `password`   | Xovis device password                              |
-| `hostname`     | Xovis device hostname |
-| `port`     | Xovis device port |
-| `checkCertificate`     | Specifies whether the device certificate should be verified (should be `true` for devices publicly accessible, can be `false` for devices inaccessible from the Internet). |
-| `enable`          | Flag to enable or disable this configuration.                                   |
-| `refreshInterval` | Interval in seconds for data synchronization.                                   |
-| `requestTimeout`  | API query timeout in seconds.                                                   |
-| `projectIDs`      | List of Eliona project IDs for data collection.                                 |
+---
 
-Example configuration JSON:
+### Step 1: Create a Xovis App Configuration
+
+First, create a configuration that defines how Eliona interacts with the Xovis device. This configuration contains important details such as whether the device certificate should be verified, the frequency of data collection, and API timeouts.
+
+**Endpoint**: `/configs`
+
+**Method**: `POST`
+
+**Required Data**:
+| Attribute          | Description                                                                                                                                                                   |
+|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `checkCertificate` | Specifies whether the device certificate should be verified (`true` for publicly accessible devices, `false` for devices that are not publicly accessible).                    |
+| `enable`           | Flag to enable or disable data synchronization for this configuration.                                                                                                         |
+| `refreshInterval`  | Interval in seconds for collecting data from the Xovis device (default: 60 seconds).                                                                                           |
+| `requestTimeout`   | Timeout in seconds for the API request to the Xovis device (default: 120 seconds).                                                                                             |
+| `projectIDs`       | List of Eliona project IDs for which this device should collect data. For each project ID, smart devices are automatically created as assets in Eliona.                         |
+
+### Example Configuration Request:
 
 ```json
 {
-  "username": "Username",
-  "password": "Password",
-  "hostname": "192.168.1.x",
-  "port": 443,
   "checkCertificate": true,
   "enable": true,
   "refreshInterval": 60,
   "requestTimeout": 120,
-  "projectIDs": [
-    "10"
-  ]
+  "projectIDs": ["10"]
 }
 ```
 
-## Continuous Asset Creation
+### Response:
 
-### Xovis Sensor Discovery and Configuration
+Once the configuration is successfully created, you will receive a response with the internal ID (`id`) of the newly created configuration. This ID is important as it will be used when configuring sensors in the next step.
 
-To add Xovis sensors to the Eliona application, follow these guidelines:
+**Example Response**:
 
-#### **Initial Configuration**
+```json
+{
+  "id": 1,
+  "enable": true,
+  "refreshInterval": 60,
+  "requestTimeout": 120,
+  "active": true,
+  "projectIDs": ["10"],
+  "userId": "585"
+}
+```
 
-1. **Manual Sensor Configuration**:
-   - At least one Xovis sensor must be configured manually in the Eliona app. This sensor will serve as the discovery device, responsible for finding other Xovis sensors on the network.
+You will see the above JSON on the other side of your screen, which includes the `id` field that is automatically generated. **You need to use this `id` when configuring sensors** in the next step.
 
-#### **Sensor Discovery Methods**
+---
 
-Xovis sensors support two methods for discovering other sensors on the network:
+### Step 2: Add Xovis Sensors Using the Configuration ID
 
-1. **Layer 2 (L2) Discovery**:
-   - **Description**: This method scans the sensor’s own subnet (e.g., 192.168.1.0/24) to find other Xovis devices.
-   - **Configuration**: No additional configuration is required for L2 discovery.
+With the configuration ID from the previous step (e.g., `"id": 1`), you can now proceed to configure Xovis sensors. Each sensor is associated with a configuration and supports discovery methods such as Layer 2 (L2) or Layer 3 (L3).
 
-2. **Layer 3 (L3) Discovery**:
-   - **Description**: This method performs an active scan across a specified IP range to identify Xovis devices. It is useful for discovering devices beyond the local subnet.
-   - **Configuration**: Requires configuration of the following:
-     - **First IP Address**: The starting IP address for the scan.
-     - **IP Count**: The number of IP addresses to scan.
+**Endpoint**: `/sensors`
 
-#### **Continuous Asset Creation (CAC)**
+**Method**: `POST`
 
-- **Automatic Asset Creation**: Once the discovery configuration is set, the application will initiate Continuous Asset Creation (CAC). Discovered sensors are automatically added as assets in Eliona.
-- **Notifications**: Users will be notified through Eliona’s notification system when new assets are created.
+**Required Data**:
+| Attribute          | Description                                                                                                                                                                   |
+|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `configuration_id` | The ID of the configuration created in the previous step. This associates the sensor with the configuration.                                                                  |
+| `username`         | Xovis sensor username.                                                                                                                                                         |
+| `password`         | Xovis sensor password.                                                                                                                                                         |
+| `hostname`         | Hostname or IP address of the Xovis sensor.                                                                                                                                    |
+| `port`             | Network port used to communicate with the sensor (e.g., 443 for HTTPS).                                                                                                        |
+| `discovery_mode`   | The mode used for discovering other sensors (`disabled`, `L2`, or `L3`).                                                                                                       |
+| `l3_first_ip`      | (Optional) The starting IP address for Layer 3 (L3) discovery, used to find Xovis sensors in a specific range.                                                                 |
+| `l3_count`         | (Optional) The number of IP addresses to scan when using L3 discovery mode.                                                                                                     |
+
+### Example Sensor Request:
+
+Use the configuration `id` (e.g., `1`) from the previous step when posting the sensor configuration.
+
+```json
+{
+  "configuration_id": 1,
+  "username": "sensor_user",
+  "password": "securepassword123",
+  "hostname": "sensor1.local",
+  "port": 8080,
+  "discovery_mode": "L3",
+  "l3_first_ip": "192.168.1.10",
+  "l3_count": 50
+}
+```
+
+### Response:
+
+Upon successfully creating the sensor, the system will return the details of the created sensor, allowing you to monitor and manage it.
+
+---
+
+### Continuous Asset Creation (CAC)
+
+Once the configuration and sensor discovery settings are complete, Eliona will begin Continuous Asset Creation (CAC). Discovered sensors will be automatically added as assets in Eliona, and the following will occur:
+
+- **Automatic Asset Creation**: Sensors identified through discovery (L2 or L3) will be automatically added to Eliona as assets.
+- **Notifications**: Users will be notified through Eliona’s notification system when new assets (sensors) are created, ensuring that newly discovered sensors are visible and actionable.
+
+---
+
+### Summary Workflow
+
+1. **Create Configuration**: POST to `/configs`, receive a configuration ID in the response.
+2. **Add Sensors**: Use the configuration ID when posting sensor data to `/sensors`.
+3. **Asset Creation**: Eliona automatically creates assets and notifies you when new sensors are discovered.
 
 #### **Handling NAT and Address Modifications**
 
