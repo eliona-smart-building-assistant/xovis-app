@@ -45,7 +45,7 @@ func (d *Zone) GetAssetType() string {
 }
 
 func (d *Zone) GetGAI() string {
-	return d.GetAssetType() + "_" + string(d.ID)
+	return fmt.Sprintf("%s_%v", d.GetAssetType(), d.ID)
 }
 
 func (d *Zone) GetAssetID(projectID string) (*int32, error) {
@@ -53,7 +53,7 @@ func (d *Zone) GetAssetID(projectID string) (*int32, error) {
 }
 
 func (d *Zone) SetAssetID(assetID int32, projectID string) error {
-	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, string(d.ID)); err != nil {
+	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, fmt.Sprint(d.ID)); err != nil {
 		return fmt.Errorf("inserting asset to config db: %v", err)
 	}
 	return nil
@@ -89,7 +89,7 @@ func (d *Line) GetAssetType() string {
 }
 
 func (d *Line) GetGAI() string {
-	return d.GetAssetType() + "_" + string(d.ID)
+	return fmt.Sprintf("%s_%v", d.GetAssetType(), d.ID)
 }
 
 func (d *Line) GetAssetID(projectID string) (*int32, error) {
@@ -97,7 +97,7 @@ func (d *Line) GetAssetID(projectID string) (*int32, error) {
 }
 
 func (d *Line) SetAssetID(assetID int32, projectID string) error {
-	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, string(d.ID)); err != nil {
+	if err := conf.InsertAsset(context.Background(), *d.Config, projectID, d.GetGAI(), assetID, fmt.Sprint(d.ID)); err != nil {
 		return fmt.Errorf("inserting asset to config db: %v", err)
 	}
 	return nil
