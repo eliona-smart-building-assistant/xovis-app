@@ -19,16 +19,16 @@ import (
 // The ConfigurationAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a ConfigurationAPIServicer to perform the required actions, then write the service results to the http response.
 type ConfigurationAPIRouter interface {
-	DeleteConfigurationById(http.ResponseWriter, *http.Request)
-	GetConfigurationById(http.ResponseWriter, *http.Request)
 	GetConfigurations(http.ResponseWriter, *http.Request)
 	PostConfiguration(http.ResponseWriter, *http.Request)
+	GetConfigurationById(http.ResponseWriter, *http.Request)
 	PutConfigurationById(http.ResponseWriter, *http.Request)
+	DeleteConfigurationById(http.ResponseWriter, *http.Request)
 	SensorsGet(http.ResponseWriter, *http.Request)
-	SensorsIdDelete(http.ResponseWriter, *http.Request)
+	SensorsPost(http.ResponseWriter, *http.Request)
 	SensorsIdGet(http.ResponseWriter, *http.Request)
 	SensorsIdPut(http.ResponseWriter, *http.Request)
-	SensorsPost(http.ResponseWriter, *http.Request)
+	SensorsIdDelete(http.ResponseWriter, *http.Request)
 }
 
 // CustomizationAPIRouter defines the required methods for binding the api requests to a responses for the CustomizationAPI
@@ -42,8 +42,8 @@ type CustomizationAPIRouter interface {
 // The VersionAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a VersionAPIServicer to perform the required actions, then write the service results to the http response.
 type VersionAPIRouter interface {
-	GetOpenAPI(http.ResponseWriter, *http.Request)
 	GetVersion(http.ResponseWriter, *http.Request)
+	GetOpenAPI(http.ResponseWriter, *http.Request)
 }
 
 // ConfigurationAPIServicer defines the api actions for the ConfigurationAPI service
@@ -51,16 +51,16 @@ type VersionAPIRouter interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type ConfigurationAPIServicer interface {
-	DeleteConfigurationById(context.Context, int64) (ImplResponse, error)
-	GetConfigurationById(context.Context, int64) (ImplResponse, error)
 	GetConfigurations(context.Context) (ImplResponse, error)
 	PostConfiguration(context.Context, Configuration) (ImplResponse, error)
+	GetConfigurationById(context.Context, int64) (ImplResponse, error)
 	PutConfigurationById(context.Context, int64, Configuration) (ImplResponse, error)
+	DeleteConfigurationById(context.Context, int64) (ImplResponse, error)
 	SensorsGet(context.Context) (ImplResponse, error)
-	SensorsIdDelete(context.Context, int32) (ImplResponse, error)
+	SensorsPost(context.Context, SensorCreateUpdate) (ImplResponse, error)
 	SensorsIdGet(context.Context, int32) (ImplResponse, error)
 	SensorsIdPut(context.Context, int32, SensorCreateUpdate) (ImplResponse, error)
-	SensorsPost(context.Context, SensorCreateUpdate) (ImplResponse, error)
+	SensorsIdDelete(context.Context, int32) (ImplResponse, error)
 }
 
 // CustomizationAPIServicer defines the api actions for the CustomizationAPI service
@@ -76,6 +76,6 @@ type CustomizationAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type VersionAPIServicer interface {
-	GetOpenAPI(context.Context) (ImplResponse, error)
 	GetVersion(context.Context) (ImplResponse, error)
+	GetOpenAPI(context.Context) (ImplResponse, error)
 }

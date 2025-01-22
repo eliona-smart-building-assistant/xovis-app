@@ -53,16 +53,6 @@ func NewConfigurationAPIController(s ConfigurationAPIServicer, opts ...Configura
 // Routes returns all the api routes for the ConfigurationAPIController
 func (c *ConfigurationAPIController) Routes() Routes {
 	return Routes{
-		"DeleteConfigurationById": Route{
-			strings.ToUpper("Delete"),
-			"/v1/configs/{config-id}",
-			c.DeleteConfigurationById,
-		},
-		"GetConfigurationById": Route{
-			strings.ToUpper("Get"),
-			"/v1/configs/{config-id}",
-			c.GetConfigurationById,
-		},
 		"GetConfigurations": Route{
 			strings.ToUpper("Get"),
 			"/v1/configs",
@@ -73,20 +63,30 @@ func (c *ConfigurationAPIController) Routes() Routes {
 			"/v1/configs",
 			c.PostConfiguration,
 		},
+		"GetConfigurationById": Route{
+			strings.ToUpper("Get"),
+			"/v1/configs/{config-id}",
+			c.GetConfigurationById,
+		},
 		"PutConfigurationById": Route{
 			strings.ToUpper("Put"),
 			"/v1/configs/{config-id}",
 			c.PutConfigurationById,
+		},
+		"DeleteConfigurationById": Route{
+			strings.ToUpper("Delete"),
+			"/v1/configs/{config-id}",
+			c.DeleteConfigurationById,
 		},
 		"SensorsGet": Route{
 			strings.ToUpper("Get"),
 			"/v1/sensors",
 			c.SensorsGet,
 		},
-		"SensorsIdDelete": Route{
-			strings.ToUpper("Delete"),
-			"/v1/sensors/{id}",
-			c.SensorsIdDelete,
+		"SensorsPost": Route{
+			strings.ToUpper("Post"),
+			"/v1/sensors",
+			c.SensorsPost,
 		},
 		"SensorsIdGet": Route{
 			strings.ToUpper("Get"),
@@ -98,26 +98,44 @@ func (c *ConfigurationAPIController) Routes() Routes {
 			"/v1/sensors/{id}",
 			c.SensorsIdPut,
 		},
-		"SensorsPost": Route{
-			strings.ToUpper("Post"),
-			"/v1/sensors",
-			c.SensorsPost,
+		"SensorsIdDelete": Route{
+			strings.ToUpper("Delete"),
+			"/v1/sensors/{id}",
+			c.SensorsIdDelete,
 		},
 	}
 }
 
-// DeleteConfigurationById - Deletes a configuration
-func (c *ConfigurationAPIController) DeleteConfigurationById(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	configIdParam, err := parseNumericParameter[int64](
-		params["config-id"],
-		WithRequire[int64](parseInt64),
-	)
+// GetConfigurations - Get configurations
+func (c *ConfigurationAPIController) GetConfigurations(w http.ResponseWriter, r *http.Request) {
+	result, err := c.service.GetConfigurations(r.Context())
+	// If an error occurred, encode the error with the status code
 	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Param: "config-id", Err: err}, nil)
+		c.errorHandler(w, r, err, &result)
 		return
 	}
-	result, err := c.service.DeleteConfigurationById(r.Context(), configIdParam)
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// PostConfiguration - Creates a configuration
+func (c *ConfigurationAPIController) PostConfiguration(w http.ResponseWriter, r *http.Request) {
+	var configurationParam Configuration
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&configurationParam); err != nil && !errors.Is(err, io.EOF) {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertConfigurationRequired(configurationParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertConfigurationConstraints(configurationParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.PostConfiguration(r.Context(), configurationParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -148,45 +166,6 @@ func (c *ConfigurationAPIController) GetConfigurationById(w http.ResponseWriter,
 	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
-// GetConfigurations - Get configurations
-func (c *ConfigurationAPIController) GetConfigurations(w http.ResponseWriter, r *http.Request) {
-	result, err := c.service.GetConfigurations(r.Context())
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// PostConfiguration - Creates a configuration
-func (c *ConfigurationAPIController) PostConfiguration(w http.ResponseWriter, r *http.Request) {
-	configurationParam := Configuration{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&configurationParam); err != nil && !errors.Is(err, io.EOF) {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	if err := AssertConfigurationRequired(configurationParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	if err := AssertConfigurationConstraints(configurationParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	result, err := c.service.PostConfiguration(r.Context(), configurationParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
 // PutConfigurationById - Updates a configuration
 func (c *ConfigurationAPIController) PutConfigurationById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -198,7 +177,7 @@ func (c *ConfigurationAPIController) PutConfigurationById(w http.ResponseWriter,
 		c.errorHandler(w, r, &ParsingError{Param: "config-id", Err: err}, nil)
 		return
 	}
-	configurationParam := Configuration{}
+	var configurationParam Configuration
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 	if err := d.Decode(&configurationParam); err != nil && !errors.Is(err, io.EOF) {
@@ -223,6 +202,27 @@ func (c *ConfigurationAPIController) PutConfigurationById(w http.ResponseWriter,
 	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
+// DeleteConfigurationById - Deletes a configuration
+func (c *ConfigurationAPIController) DeleteConfigurationById(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	configIdParam, err := parseNumericParameter[int64](
+		params["config-id"],
+		WithRequire[int64](parseInt64),
+	)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Param: "config-id", Err: err}, nil)
+		return
+	}
+	result, err := c.service.DeleteConfigurationById(r.Context(), configIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
 // SensorsGet - Get list of sensors
 func (c *ConfigurationAPIController) SensorsGet(w http.ResponseWriter, r *http.Request) {
 	result, err := c.service.SensorsGet(r.Context())
@@ -235,18 +235,24 @@ func (c *ConfigurationAPIController) SensorsGet(w http.ResponseWriter, r *http.R
 	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
-// SensorsIdDelete - Delete a sensor
-func (c *ConfigurationAPIController) SensorsIdDelete(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	idParam, err := parseNumericParameter[int32](
-		params["id"],
-		WithRequire[int32](parseInt32),
-	)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Param: "id", Err: err}, nil)
+// SensorsPost - Create a new sensor
+func (c *ConfigurationAPIController) SensorsPost(w http.ResponseWriter, r *http.Request) {
+	var sensorCreateUpdateParam SensorCreateUpdate
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&sensorCreateUpdateParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
 	}
-	result, err := c.service.SensorsIdDelete(r.Context(), idParam)
+	if err := AssertSensorCreateUpdateRequired(sensorCreateUpdateParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertSensorCreateUpdateConstraints(sensorCreateUpdateParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.SensorsPost(r.Context(), sensorCreateUpdateParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -288,7 +294,7 @@ func (c *ConfigurationAPIController) SensorsIdPut(w http.ResponseWriter, r *http
 		c.errorHandler(w, r, &ParsingError{Param: "id", Err: err}, nil)
 		return
 	}
-	sensorCreateUpdateParam := SensorCreateUpdate{}
+	var sensorCreateUpdateParam SensorCreateUpdate
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 	if err := d.Decode(&sensorCreateUpdateParam); err != nil {
@@ -313,24 +319,18 @@ func (c *ConfigurationAPIController) SensorsIdPut(w http.ResponseWriter, r *http
 	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
-// SensorsPost - Create a new sensor
-func (c *ConfigurationAPIController) SensorsPost(w http.ResponseWriter, r *http.Request) {
-	sensorCreateUpdateParam := SensorCreateUpdate{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&sensorCreateUpdateParam); err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+// SensorsIdDelete - Delete a sensor
+func (c *ConfigurationAPIController) SensorsIdDelete(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam, err := parseNumericParameter[int32](
+		params["id"],
+		WithRequire[int32](parseInt32),
+	)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Param: "id", Err: err}, nil)
 		return
 	}
-	if err := AssertSensorCreateUpdateRequired(sensorCreateUpdateParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	if err := AssertSensorCreateUpdateConstraints(sensorCreateUpdateParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	result, err := c.service.SensorsPost(r.Context(), sensorCreateUpdateParam)
+	result, err := c.service.SensorsIdDelete(r.Context(), idParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
