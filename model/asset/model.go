@@ -153,22 +153,22 @@ func (d *PeopleCounter) SetAssetID(assetID int32, projectID string) error {
 
 func (d *PeopleCounter) GetLocationalChildren() []asset.LocationalNode {
 	var locationalChildren []asset.LocationalNode
-	for _, l := range d.Lines {
-		locationalChildren = append(locationalChildren, &l)
+	for i := range d.Lines {
+		locationalChildren = append(locationalChildren, &d.Lines[i])
 	}
-	for _, z := range d.Zones {
-		locationalChildren = append(locationalChildren, &z)
+	for i := range d.Zones {
+		locationalChildren = append(locationalChildren, &d.Zones[i])
 	}
 	return locationalChildren
 }
 
 func (d *PeopleCounter) GetFunctionalChildren() []asset.FunctionalNode {
 	var functionalChildren []asset.FunctionalNode
-	for _, l := range d.Lines {
-		functionalChildren = append(functionalChildren, &l)
+	for i := range d.Lines {
+		functionalChildren = append(functionalChildren, &d.Lines[i])
 	}
-	for _, z := range d.Zones {
-		functionalChildren = append(functionalChildren, &z)
+	for i := range d.Zones {
+		functionalChildren = append(functionalChildren, &d.Zones[i])
 	}
 	return functionalChildren
 }
