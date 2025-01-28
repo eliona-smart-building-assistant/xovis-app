@@ -29,6 +29,8 @@ type Zone struct {
 	Name     string `eliona:"name" subtype:"info"`
 	Presence int    `eliona:"presence" subtype:"input"`
 
+	DeviceMac string
+
 	Config *confmodel.Configuration
 }
 
@@ -45,7 +47,7 @@ func (d *Zone) GetAssetType() string {
 }
 
 func (d *Zone) GetGAI() string {
-	return fmt.Sprintf("%s_%v", d.GetAssetType(), d.ID)
+	return fmt.Sprintf("%s_%s_%v", d.GetAssetType(), d.DeviceMac, d.ID)
 }
 
 func (d *Zone) GetAssetID(projectID string) (*int32, error) {
@@ -73,6 +75,8 @@ type Line struct {
 	Forward  int    `eliona:"forward" subtype:"input"`
 	Backward int    `eliona:"backward" subtype:"input"`
 
+	DeviceMac string
+
 	Config *confmodel.Configuration
 }
 
@@ -89,7 +93,7 @@ func (d *Line) GetAssetType() string {
 }
 
 func (d *Line) GetGAI() string {
-	return fmt.Sprintf("%s_%v", d.GetAssetType(), d.ID)
+	return fmt.Sprintf("%s_%s_%v", d.GetAssetType(), d.DeviceMac, d.ID)
 }
 
 func (d *Line) GetAssetID(projectID string) (*int32, error) {

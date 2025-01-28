@@ -363,3 +363,27 @@ func GetAssetById(assetId int32) (confmodel.Asset, error) {
 	}
 	return toAppAsset(*asset, config), nil
 }
+
+func GetAssetByGAI(gai string) (confmodel.Asset, error) {
+	asset, err := appdb.Assets(
+		appdb.AssetWhere.GlobalAssetID.EQ(gai),
+	).OneG(context.Background())
+	if errors.Is(err, sql.ErrNoRows) {
+		return confmodel.Asset{}, ErrNotFound
+	}
+	if err != nil {
+		return confmodel.Asset{}, fmt.Errorf("fetching asset: %v", err)
+	}
+	if !asset.AssetID.Valid {
+		return confmodel.Asset{}, fmt.Errorf("shouldn't happen: assetID is nil")
+	}
+	c, err := asset.Configuration().OneG(context.Background())
+	if err != nil {
+		return confmodel.Asset{}, fmt.Errorf("fetching configuration: %v", err)
+	}
+	config, err := toAppConfig(c)
+	if err != nil {
+		return confmodel.Asset{}, fmt.Errorf("translating configuration: %v", err)
+	}
+	return toAppAsset(*asset, config), nil
+}

@@ -255,12 +255,12 @@ func (x *Xovis) DiscoverDevices() ([]confmodel.Sensor, error) {
 func (x *Xovis) GetDevice() (assetmodel.PeopleCounter, error) {
 	idResp, err := x.getDeviceID()
 	if err != nil {
-		return assetmodel.PeopleCounter{}, err
+		return assetmodel.PeopleCounter{}, fmt.Errorf("getting device ID: %v", err)
 	}
 
 	deviceInfoResp, err := x.getDeviceInfo()
 	if err != nil {
-		return assetmodel.PeopleCounter{}, err
+		return assetmodel.PeopleCounter{}, fmt.Errorf("getting device info: %v", err)
 	}
 
 	return assetmodel.PeopleCounter{
@@ -322,6 +322,11 @@ func (x *Xovis) GetAllCounters() ([]assetmodel.Line, []assetmodel.Zone, error) {
 	var lines []assetmodel.Line
 	var zones []assetmodel.Zone
 
+	deviceInfoResp, err := x.getDeviceInfo()
+	if err != nil {
+		return nil, nil, fmt.Errorf("getting device info: %v", err)
+	}
+
 	logics, err := x.getCountersRaw()
 	if err != nil {
 		return nil, nil, fmt.Errorf("getting counter data: %w", err)
@@ -347,11 +352,12 @@ func (x *Xovis) GetAllCounters() ([]assetmodel.Line, []assetmodel.Zone, error) {
 			}
 
 			lines = append(lines, assetmodel.Line{
-				Name:     logic.Name,
-				ID:       logic.ID,
-				Forward:  lineData.ForwardTotal,
-				Backward: lineData.BackwardTotal,
-				Config:   &x.sensorConf.Config,
+				Name:      logic.Name,
+				ID:        logic.ID,
+				Forward:   lineData.ForwardTotal,
+				Backward:  lineData.BackwardTotal,
+				DeviceMac: deviceInfoResp.MAC,
+				Config:    &x.sensorConf.Config,
 			})
 
 		case InfoTypeZone, InfoTypeZoneLegacy:
@@ -360,10 +366,11 @@ func (x *Xovis) GetAllCounters() ([]assetmodel.Line, []assetmodel.Zone, error) {
 				continue
 			}
 			zones = append(zones, assetmodel.Zone{
-				Name:     logic.Name,
-				ID:       logic.ID,
-				Presence: logic.Counts[0].Value,
-				Config:   &x.sensorConf.Config,
+				Name:      logic.Name,
+				ID:        logic.ID,
+				Presence:  logic.Counts[0].Value,
+				DeviceMac: deviceInfoResp.MAC,
+				Config:    &x.sensorConf.Config,
 			})
 
 		default:

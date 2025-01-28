@@ -17,38 +17,23 @@ package eliona
 
 import (
 	"fmt"
-	assetmodel "xovis/model/asset"
 	confmodel "xovis/model/conf"
 
+	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
-	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
 const ClientReference string = "xovis"
 
-func UpsertAssetData(config confmodel.Configuration, assets []assetmodel.PeopleCounter) error {
-	for _, projectId := range config.ProjectIDs {
-		for _, a := range assets {
-			log.Debug("Eliona", "upserting data for asset: config %d and asset '%v'", config.ID, a.GetGAI())
-			assetId, err := a.GetAssetID(projectId)
-			if err != nil {
-				return err
-			}
-			if assetId == nil {
-				// This might happen in case of filtered or newly added devices.
-				log.Debug("conf", "unable to find asset ID for %v", a.GetGAI())
-				continue
-			}
-
-			data := asset.Data{
-				AssetId:         *assetId,
-				Data:            a,
-				ClientReference: ClientReference,
-			}
-			if err := asset.UpsertAssetDataIfAssetExists(data); err != nil {
-				return fmt.Errorf("upserting data: %v", err)
-			}
-		}
+func UpsertAssetData(config confmodel.Configuration, assetID int32, data map[string]any) error {
+	apiData := api.Data{
+		AssetId:         assetID,
+		Data:            data,
+		ClientReference: *api.NewNullableString(api.PtrString(ClientReference)),
+		Subtype:         api.SUBTYPE_INPUT,
+	}
+	if err := asset.UpsertDataIfAssetExists(apiData); err != nil {
+		return fmt.Errorf("upserting data: %v", err)
 	}
 	return nil
 }
