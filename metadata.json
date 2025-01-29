@@ -1,20 +1,20 @@
 {
   "name": "xovis",
-  "elionaMinVersion": "v11.0.0",
+  "elionaMinVersion": "v12.0.0",
   "displayName": {
     "en": "Xovis",
     "de": "Xovis"
   },
   "description": {
-    "en": "The Xovis app is used to access Xovis.",
-    "de": "Die Xovis App ermöglicht den Zugriff auf Xovis."
+    "en": "The Xovis app is used to access Xovis people counters.",
+    "de": "Die Xovis-App wird für den Zugang zu den Xovis-Personenzählern verwendet"
   },
   "dashboardTemplateNames": [
     "Xovis"
   ],
   "apiUrl": "v1",
   "apiSpecificationPath": "/version/openapi.json",
-  "documentationUrl": "https://doc.eliona.io/eliona/referenzen/app-entwicklung",
+  "documentationUrl": "https://doc.eliona.io/collection/eliona-english/eliona-apps/apps/xovis",
   "useEnvironment": [
     "CONNECTION_STRING",
     "INIT_CONNECTION_STRING",

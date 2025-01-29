@@ -21,7 +21,7 @@ info:
   description: API to access and configure the Xovis app
 externalDocs:
   description: Find out more about the Xovis app
-  url: https://github.com/eliona-smart-building-assistant/xovis-app
+  url: https://doc.eliona.io/collection/eliona-english/eliona-apps/apps/xovis
 servers:
   - url: "https://{server}/v1"
     variables:
@@ -36,17 +36,17 @@ tags:
   - name: Configuration
     description: Configure the app
     externalDocs:
-      url: https://github.com/eliona-smart-building-assistant/xovis-app
+      url: https://doc.eliona.io/collection/eliona-english/eliona-apps/apps/xovis
 
   - name: Version
     description: API version
     externalDocs:
-      url: https://github.com/eliona-smart-building-assistant/xovis-app
+      url: https://doc.eliona.io/collection/eliona-english/eliona-apps/apps/xovis
 
   - name: Customization
     description: Help to customize Eliona environment
     externalDocs:
-      url: https://github.com/eliona-smart-building-assistant/xovis-app
+      url: https://doc.eliona.io/collection/eliona-english/eliona-apps/apps/xovis
 
 paths:
   /configs:
