@@ -68,3 +68,44 @@ WHERE name LIKE 'Xovis%';
 
 -- DELETE FROM eliona_app WHERE app_name = 'xovis';
 -- DELETE FROM eliona_store WHERE app_name = 'xovis';
+
+-- Dev reset
+INSERT INTO public.eliona_app (app_name, enable)
+VALUES ('xovis', 't')
+ON CONFLICT (app_name) DO UPDATE SET initialized_at = null;
+
+DELETE FROM heap
+WHERE asset_id IN (
+	SELECT asset_id
+	FROM asset
+	WHERE asset_type LIKE E'xovis\\_%'
+);
+
+DELETE FROM attribute_schema
+WHERE asset_type LIKE E'xovis\\_%';
+
+DELETE FROM asset
+WHERE asset_type LIKE E'xovis\\_%';
+
+DELETE FROM asset_type
+WHERE asset_type LIKE E'xovis\\_%';
+
+DELETE FROM public.widget_data
+WHERE widget_id IN (
+	SELECT public.widget.id
+	FROM public.widget
+		JOIN public.dashboard USING (dashboard_id)
+	WHERE public.dashboard.name LIKE 'Xovis%'
+);
+
+DELETE FROM public.widget
+WHERE dashboard_id IN (
+	SELECT dashboard_id
+	FROM public.dashboard
+	WHERE name LIKE 'Xovis%'
+);
+
+DELETE FROM public.dashboard
+WHERE name LIKE 'Xovis%';
+
+DELETE FROM xovis.asset;
