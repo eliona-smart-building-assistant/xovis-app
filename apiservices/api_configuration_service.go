@@ -17,9 +17,12 @@ package apiservices
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"xovis/apiserver"
+	"xovis/broker"
 	"xovis/conf"
 	confmodel "xovis/model/conf"
 )
@@ -50,11 +53,20 @@ func (s *ConfigurationAPIService) GetConfigurations(ctx context.Context) (apiser
 
 func (s *ConfigurationAPIService) PostConfiguration(ctx context.Context, config apiserver.Configuration) (apiserver.ImplResponse, error) {
 	appConfig := toAppConfig(config)
+	discovered, err := discoverDevices(appConfig)
+	if err != nil {
+		err = fmt.Errorf("testing configuration: %v", err)
+		return apiserver.ImplResponse{Code: http.StatusBadRequest, Body: err}, err
+	}
 	insertedConfig, err := conf.InsertConfig(ctx, appConfig)
 	if err != nil {
 		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
 	}
-	return apiserver.Response(http.StatusCreated, toAPIConfig(insertedConfig)), nil
+	resp, err := formatResponse(fmt.Sprintf("configuration successfully created and discovered %v new sensors", discovered), toAPIConfig(insertedConfig))
+	if err != nil {
+		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
+	}
+	return apiserver.Response(http.StatusCreated, resp), nil
 }
 
 func (s *ConfigurationAPIService) GetConfigurationById(ctx context.Context, configId int64) (apiserver.ImplResponse, error) {
@@ -71,11 +83,20 @@ func (s *ConfigurationAPIService) GetConfigurationById(ctx context.Context, conf
 func (s *ConfigurationAPIService) PutConfigurationById(ctx context.Context, configId int64, config apiserver.Configuration) (apiserver.ImplResponse, error) {
 	config.Id = &configId
 	appConfig := toAppConfig(config)
+	discovered, err := discoverDevices(appConfig)
+	if err != nil {
+		err = fmt.Errorf("testing configuration: %v", err)
+		return apiserver.ImplResponse{Code: http.StatusBadRequest, Body: err}, err
+	}
 	upsertedConfig, err := conf.UpsertConfig(ctx, appConfig)
 	if err != nil {
 		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
 	}
-	return apiserver.Response(http.StatusCreated, toAPIConfig(upsertedConfig)), nil
+	resp, err := formatResponse(fmt.Sprintf("configuration successfully updated and discovered %v new sensors", discovered), toAPIConfig(upsertedConfig))
+	if err != nil {
+		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
+	}
+	return apiserver.Response(http.StatusCreated, resp), nil
 }
 
 func (s *ConfigurationAPIService) DeleteConfigurationById(ctx context.Context, configId int64) (apiserver.ImplResponse, error) {
@@ -206,4 +227,32 @@ func toAppSensor(apiSensor apiserver.SensorCreateUpdate) confmodel.Sensor {
 		L3FirstIP:     apiSensor.L3FirstIp,
 		L3Count:       apiSensor.L3Count,
 	}
+}
+
+func discoverDevices(config confmodel.Configuration) (int, error) {
+	sensors, err := conf.GetSensorsOfConfig(context.Background(), config.ID)
+	if err != nil {
+		return 0, fmt.Errorf("Couldn't read sensors from DB: %v", err)
+	}
+
+	discoveredSensors := 0
+	for _, sensor := range sensors {
+		xovis := broker.NewXovisConnector(sensor)
+		discovereds, err := xovis.DiscoverDevices()
+		if err != nil {
+			return 0, fmt.Errorf("discovering devices: %v", err)
+		}
+		discoveredSensors += len(discovereds)
+	}
+
+	return discoveredSensors, nil
+}
+
+// formatResponse marshals the struct and appends it to the text in a nicely formatted way.
+func formatResponse(message string, data interface{}) (string, error) {
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal response data: %w", err)
+	}
+	return fmt.Sprintf("%s\n\n%s", message, string(jsonData)), nil
 }
