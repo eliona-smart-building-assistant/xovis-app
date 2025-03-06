@@ -133,7 +133,7 @@ Once the configuration and sensor discovery settings are complete, Eliona will b
 
 #### **Password Management**
 
-- **Default Passwords**: The application assumes that all discovered devices use the same password as the dicsovering device.
+- **Default Passwords**: The application assumes that all discovered devices use the same password as the discovering device.
 - **Individual Passwords**: If devices use unique passwords, update the configuration for each device accordingly.
 
 ### Datapush
@@ -142,7 +142,10 @@ For continuous passing of the data (so that the data comes immediately as people
 
 1. Go to the sensor's configuration interface
 2. Go to `Settings > Singlesensor > Date push`
-3. Set up a new HTTPS connection with destination `https://{your-eliona-instance}/apps-public/xovis/{configuration_id}/datapush`, port 443
+3. Set up a new HTTPS connection:
+  - Destination: `https://{your-eliona-instance}/apps/xovis/api/v1/datapush/{configuration_id}`
+  - Port: 443
+  - Advanced Settings -> Custom header: Name: `X-API-Key` Value: API key defined in Eliona
 4. Create a new Agent -> Live Data Push:
   - Data filtering: as you wish
   - Format: JSON

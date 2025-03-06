@@ -28,6 +28,7 @@ import (
 	"xovis/eliona"
 	assetmodel "xovis/model/asset"
 	confmodel "xovis/model/conf"
+	"xovis/webhook"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/app"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
@@ -195,15 +196,27 @@ func collectResources(config confmodel.Configuration) error {
 	return nil
 }
 
-// listenApi starts the API server and listen for requests
 func listenApi() {
-	err := http.ListenAndServe(":"+common.Getenv("API_SERVER_PORT", "3000"),
-		frontend.NewEnvironmentHandler(
-			utilshttp.NewCORSEnabledHandler(
-				apiserver.NewRouter(
-					apiserver.NewConfigurationAPIController(apiservices.NewConfigurationAPIService()),
-					apiserver.NewVersionAPIController(apiservices.NewVersionAPIService()),
-					apiserver.NewCustomizationAPIController(apiservices.NewCustomizationAPIService()),
-				))))
+	mux := http.NewServeMux()
+
+	// Add API Server routes
+	apiRouter := apiserver.NewRouter(
+		apiserver.NewConfigurationAPIController(apiservices.NewConfigurationAPIService()),
+		apiserver.NewVersionAPIController(apiservices.NewVersionAPIService()),
+		apiserver.NewCustomizationAPIController(apiservices.NewCustomizationAPIService()),
+	)
+	mux.Handle("/", apiRouter)
+
+	// Register Webhook handler under /webhook
+	mux.Handle("/webhook", webhook.NewWebhookHandler())
+
+	// Wrap with middleware
+	handler := frontend.NewEnvironmentHandler(
+		utilshttp.NewCORSEnabledHandler(mux),
+	)
+
+	// Start the server
+	port := common.Getenv("API_SERVER_PORT", "3000")
+	err := http.ListenAndServe(":"+port, handler)
 	log.Fatal("main", "API server: %v", err)
 }

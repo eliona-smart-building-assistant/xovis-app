@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strconv"
 	"xovis/conf"
 	"xovis/eliona"
@@ -30,31 +29,40 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
+func NewWebhookHandler() http.Handler {
+	return newWebhookServer()
+}
+
 type webhookServer struct {
 	mux *http.ServeMux
 }
 
 func newWebhookServer() *webhookServer {
-	return &webhookServer{
+	server := &webhookServer{
 		mux: http.NewServeMux(),
 	}
+
+	// Register handler for /webhook/{config-id}
+	server.mux.HandleFunc("/webhook/{config-id}", server.handleDatapush)
+
+	return server
 }
 
 func (s *webhookServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("webhook", "Received request for URL: %s, Method: %s", r.URL.Path, r.Method)
 
-	configID, err := parseConfigIDFromPath(r.URL.Path)
+	// Extract configID from path using Go 1.22's `PathValue`
+	configIDStr := r.PathValue("config-id")
+	configID, err := strconv.ParseInt(configIDStr, 10, 64)
 	if err != nil {
-		log.Warn("webhook", "Invalid URL path, missing or invalid config ID: %s", r.URL.Path)
-		http.Error(w, "Invalid URL path, missing or invalid config ID", http.StatusBadRequest)
+		log.Warn("webhook", "Invalid config ID: %s", configIDStr)
+		http.Error(w, "Invalid config ID", http.StatusBadRequest)
 		return
 	}
 
-	ctx := r.Context()
-	ctx = context.WithValue(ctx, "configID", configID)
+	// Store configID in request context
+	ctx := context.WithValue(r.Context(), "configID", configID)
 	r = r.WithContext(ctx)
-
-	r.URL.Path = removeConfigIDFromPath(r.URL.Path)
 
 	// Use a custom ResponseWriter to capture all status codes
 	lrw := &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
@@ -202,30 +210,4 @@ func (s *webhookServer) handleDatapush(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func parseConfigIDFromPath(path string) (int64, error) {
-	// Matches "/{configID}/rest-of-path"
-	re := regexp.MustCompile(`^/(\d+)/`)
-	matches := re.FindStringSubmatch(path)
-	if len(matches) < 2 {
-		return 0, fmt.Errorf("config ID not found in path")
-	}
-	return strconv.ParseInt(matches[1], 10, 64)
-}
-
-func removeConfigIDFromPath(path string) string {
-	re := regexp.MustCompile(`^/\d+/`)
-	return re.ReplaceAllString(path, "/")
-}
-
-func StartWebhookListener() {
-	server := newWebhookServer()
-
-	server.mux.HandleFunc("/datapush", server.handleDatapush)
-
-	http.Handle("/", server)
-	if err := http.ListenAndServe(":8081", nil); err != nil {
-		log.Fatal("webhook", "Error starting server on port 8081: %v\n", err)
-	}
 }

@@ -167,6 +167,7 @@ func NewXovisConnector(sensorConf confmodel.Sensor) *Xovis {
 		sensorConf: sensorConf,
 	}
 }
+
 func (x *Xovis) DiscoverDevices() ([]confmodel.Sensor, error) {
 	var resp []byte
 	var err error

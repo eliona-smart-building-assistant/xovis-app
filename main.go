@@ -17,7 +17,6 @@ package main
 
 import (
 	"time"
-	"xovis/webhook"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/app"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
@@ -52,7 +51,6 @@ func main() {
 	common.WaitForWithOs(
 		common.Loop(collectData, time.Second),
 		listenApi,
-		webhook.StartWebhookListener,
 	)
 
 	log.Info("main", "Terminate the app.")
