@@ -25,7 +25,7 @@ import (
 
 func findChildren(parent api.Asset, assets []api.Asset) (children []api.Asset) {
 	for _, asset := range assets {
-		if asset.ParentFunctionalAssetId == parent.Id {
+		if *asset.ParentFunctionalAssetId.Get() == *parent.Id.Get() {
 			children = append(children, asset)
 		}
 	}
@@ -99,7 +99,23 @@ func GetDashboard(projectId string) (api.Dashboard, error) {
 		widgetSequence++
 
 		var linesData []api.WidgetData
-		for i, line := range deviceLines {
+		i := 0
+		for _, line := range deviceLines {
+			linesData = append(linesData, api.WidgetData{
+				ElementSequence: nullableInt32(1),
+				AssetId:         line.Id,
+				Data: map[string]interface{}{
+					"aggregatedDataField":  "avg",
+					"aggregatedDataRaster": "H1",
+					"aggregatedDataType":   "heap",
+					"attribute":            "forward",
+					"description":          *line.Name.Get() + " forward",
+					// "key": "1741360302119",
+					"seq":     i,
+					"subtype": "input",
+				},
+			})
+			i++
 			linesData = append(linesData, api.WidgetData{
 				ElementSequence: nullableInt32(1),
 				AssetId:         line.Id,
@@ -108,12 +124,13 @@ func GetDashboard(projectId string) (api.Dashboard, error) {
 					"aggregatedDataRaster": "H1",
 					"aggregatedDataType":   "heap",
 					"attribute":            "backward",
-					"description":          line.Name.Get(),
+					"description":          *line.Name.Get() + " backward",
 					// "key": "1741360302119",
 					"seq":     i,
 					"subtype": "input",
 				},
 			})
+			i++
 		}
 		dashboard.Widgets = append(dashboard.Widgets, api.Widget{
 			WidgetTypeName: "GeneralDisplay",
