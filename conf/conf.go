@@ -25,6 +25,7 @@ import (
 
 	"github.com/eliona-smart-building-assistant/go-eliona/frontend"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
+	"github.com/eliona-smart-building-assistant/go-utils/log"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -160,7 +161,13 @@ func UpsertSensor(ctx context.Context, sensor confmodel.Sensor) (confmodel.Senso
 	if err != nil {
 		return confmodel.Sensor{}, fmt.Errorf("creating DB sensor from App sensor: %v", err)
 	}
-	if err := dbSensor.UpsertG(ctx, true, []string{"id", "mac_address"}, boil.Blacklist("id"), boil.Infer()); err != nil {
+	// Sensor has two unique columns, therefore we cannot use upsert properly.
+	err = dbSensor.InsertG(ctx, boil.Infer())
+	if err != nil {
+		log.Debug("updating sensor %v instead of inserting", dbSensor.MacAddress.String)
+		_, err = dbSensor.UpdateG(ctx, boil.Infer())
+	}
+	if err != nil {
 		return confmodel.Sensor{}, fmt.Errorf("upserting DB sensor: %v", err)
 	}
 	return sensor, nil
@@ -171,8 +178,14 @@ func UpsertSensorDiscovery(ctx context.Context, sensor confmodel.Sensor) (confmo
 	if err != nil {
 		return confmodel.Sensor{}, fmt.Errorf("creating DB sensor from App sensor: %v", err)
 	}
-	if err := dbSensor.UpsertG(ctx, true, []string{"id", "mac_address"}, boil.Whitelist("mac_address"), boil.Infer()); err != nil {
-		return confmodel.Sensor{}, fmt.Errorf("upserting DB sensor from discovery: %v", err)
+	// Sensor has two unique columns, therefore we cannot use upsert properly.
+	err = dbSensor.InsertG(ctx, boil.Infer())
+	if err != nil {
+		log.Debug("updating sensor %v instead of inserting", dbSensor.MacAddress.String)
+		_, err = dbSensor.UpdateG(ctx, boil.Whitelist("mac_address"))
+	}
+	if err != nil {
+		return confmodel.Sensor{}, fmt.Errorf("upserting DB sensor: %v", err)
 	}
 	return sensor, nil
 }

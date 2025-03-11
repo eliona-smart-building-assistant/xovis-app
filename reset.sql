@@ -70,6 +70,8 @@ WHERE name LIKE 'Xovis%';
 -- DELETE FROM eliona_store WHERE app_name = 'xovis';
 
 -- Dev reset
+SET SCHEMA 'public';
+
 INSERT INTO public.eliona_app (app_name, enable)
 VALUES ('xovis', 't')
 ON CONFLICT (app_name) DO UPDATE SET initialized_at = null;
