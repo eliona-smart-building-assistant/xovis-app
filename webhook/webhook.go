@@ -43,7 +43,7 @@ func newWebhookServer() *webhookServer {
 	}
 
 	// Register handler for /webhook/{config-id}
-	server.mux.HandleFunc("/webhook/{config-id}", server.handleDatapush)
+	server.mux.HandleFunc("/webhook/:config-id", server.handleDatapush)
 
 	return server
 }
