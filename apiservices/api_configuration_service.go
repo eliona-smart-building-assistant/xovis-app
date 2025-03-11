@@ -17,7 +17,6 @@ package apiservices
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -53,20 +52,11 @@ func (s *ConfigurationAPIService) GetConfigurations(ctx context.Context) (apiser
 
 func (s *ConfigurationAPIService) PostConfiguration(ctx context.Context, config apiserver.Configuration) (apiserver.ImplResponse, error) {
 	appConfig := toAppConfig(config)
-	discovered, err := discoverDevices(appConfig)
-	if err != nil {
-		err = fmt.Errorf("testing configuration: %v", err)
-		return apiserver.ImplResponse{Code: http.StatusBadRequest, Body: err}, err
-	}
 	insertedConfig, err := conf.InsertConfig(ctx, appConfig)
 	if err != nil {
 		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
 	}
-	resp, err := formatResponse(fmt.Sprintf("configuration successfully created and discovered %v new sensors", discovered), toAPIConfig(insertedConfig))
-	if err != nil {
-		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
-	}
-	return apiserver.Response(http.StatusCreated, resp), nil
+	return apiserver.Response(http.StatusCreated, toAPIConfig(insertedConfig)), nil
 }
 
 func (s *ConfigurationAPIService) GetConfigurationById(ctx context.Context, configId int64) (apiserver.ImplResponse, error) {
@@ -83,20 +73,11 @@ func (s *ConfigurationAPIService) GetConfigurationById(ctx context.Context, conf
 func (s *ConfigurationAPIService) PutConfigurationById(ctx context.Context, configId int64, config apiserver.Configuration) (apiserver.ImplResponse, error) {
 	config.Id = &configId
 	appConfig := toAppConfig(config)
-	discovered, err := discoverDevices(appConfig)
-	if err != nil {
-		err = fmt.Errorf("testing configuration: %v", err)
-		return apiserver.ImplResponse{Code: http.StatusBadRequest, Body: err}, err
-	}
 	upsertedConfig, err := conf.UpsertConfig(ctx, appConfig)
 	if err != nil {
 		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
 	}
-	resp, err := formatResponse(fmt.Sprintf("configuration successfully updated and discovered %v new sensors", discovered), toAPIConfig(upsertedConfig))
-	if err != nil {
-		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
-	}
-	return apiserver.Response(http.StatusCreated, resp), nil
+	return apiserver.Response(http.StatusCreated, toAPIConfig(upsertedConfig)), nil
 }
 
 func (s *ConfigurationAPIService) DeleteConfigurationById(ctx context.Context, configId int64) (apiserver.ImplResponse, error) {
@@ -129,7 +110,17 @@ func (s *ConfigurationAPIService) SensorsPost(ctx context.Context, sensor apiser
 	if err != nil {
 		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
 	}
-	return apiserver.Response(http.StatusCreated, toAPISensor(insertedSensor)), nil
+
+	discovered, err := discoverDevices(insertedSensor.Config)
+	if err != nil {
+		err = fmt.Errorf("testing configuration: %v", err)
+		return apiserver.ImplResponse{Code: http.StatusBadRequest, Body: err}, err
+	}
+	resp, err := formatResponse(fmt.Sprintf("configuration successfully created and discovered %v new sensors", discovered), toAPISensor(insertedSensor))
+	if err != nil {
+		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
+	}
+	return apiserver.Response(http.StatusCreated, resp), nil
 }
 
 func (s *ConfigurationAPIService) SensorsIdGet(ctx context.Context, sensorId int32) (apiserver.ImplResponse, error) {
@@ -150,7 +141,17 @@ func (s *ConfigurationAPIService) SensorsIdPut(ctx context.Context, sensorId int
 	if err != nil {
 		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
 	}
-	return apiserver.Response(http.StatusOK, toAPISensor(upsertedSensor)), nil
+
+	discovered, err := discoverDevices(upsertedSensor.Config)
+	if err != nil {
+		err = fmt.Errorf("testing configuration: %v", err)
+		return apiserver.ImplResponse{Code: http.StatusBadRequest, Body: err}, err
+	}
+	resp, err := formatResponse(fmt.Sprintf("configuration successfully created and discovered %v new sensors", discovered), toAPISensor(upsertedSensor))
+	if err != nil {
+		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
+	}
+	return apiserver.Response(http.StatusCreated, resp), nil
 }
 
 func (s *ConfigurationAPIService) SensorsIdDelete(ctx context.Context, sensorId int32) (apiserver.ImplResponse, error) {
@@ -249,10 +250,15 @@ func discoverDevices(config confmodel.Configuration) (int, error) {
 }
 
 // formatResponse marshals the struct and appends it to the text in a nicely formatted way.
-func formatResponse(message string, data interface{}) (string, error) {
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal response data: %w", err)
+func formatResponse(message string, data any) (any, error) {
+	type Response struct {
+		Message string `json:"message"`
+		Data    any    `json:"data"`
 	}
-	return fmt.Sprintf("%s\n\n%s", message, string(jsonData)), nil
+	// Construct the response as a structured JSON object, as the frontend doesn't properly format newlines
+	response := Response{
+		Message: message,
+		Data:    data,
+	}
+	return response, nil
 }
