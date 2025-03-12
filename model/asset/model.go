@@ -25,9 +25,9 @@ import (
 )
 
 type Zone struct {
-	ID       int    `eliona:"id" subtype:"info"`
-	Name     string `eliona:"name" subtype:"info"`
-	Presence int    `eliona:"presence" subtype:"input"`
+	ID       int
+	Name     string
+	Presence int `eliona:"presence" subtype:"input"`
 
 	DeviceMac string
 
@@ -70,10 +70,10 @@ func (d *Zone) GetFunctionalChildren() []asset.FunctionalNode {
 }
 
 type Line struct {
-	ID       int    `eliona:"id" subtype:"info"`
-	Name     string `eliona:"name" subtype:"info"`
-	Forward  int    `eliona:"forward" subtype:"input"`
-	Backward int    `eliona:"backward" subtype:"input"`
+	ID       int
+	Name     string
+	Forward  int `eliona:"forward" subtype:"input"`
+	Backward int `eliona:"backward" subtype:"input"`
 
 	DeviceMac string
 
@@ -117,7 +117,7 @@ func (d *Line) GetFunctionalChildren() []asset.FunctionalNode {
 
 type PeopleCounter struct {
 	MAC   string `eliona:"mac" subtype:"info"`
-	Name  string `eliona:"name" subtype:"info"`
+	Name  string
 	Model string `eliona:"model" subtype:"info"`
 
 	Group string // Group name used just for pairing
@@ -178,7 +178,7 @@ func (d *PeopleCounter) GetFunctionalChildren() []asset.FunctionalNode {
 }
 
 type Group struct {
-	Name string `eliona:"name" subtype:"info"`
+	Name string
 
 	Sensors []PeopleCounter
 

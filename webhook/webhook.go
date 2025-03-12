@@ -16,7 +16,6 @@
 package webhook
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -42,27 +41,13 @@ func newWebhookServer() *webhookServer {
 		mux: http.NewServeMux(),
 	}
 
-	// Register handler for /webhook/{config-id}
-	server.mux.HandleFunc("/webhook/:config-id", server.handleDatapush)
+	server.mux.HandleFunc("/webhook/{configID}", server.handleDatapush)
 
 	return server
 }
 
 func (s *webhookServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("webhook", "Received request for URL: %s, Method: %s", r.URL.Path, r.Method)
-
-	// Extract configID from path using Go 1.22's `PathValue`
-	configIDStr := r.PathValue("config-id")
-	configID, err := strconv.ParseInt(configIDStr, 10, 64)
-	if err != nil {
-		log.Warn("webhook", "Invalid config ID: %s", configIDStr)
-		http.Error(w, "Invalid config ID", http.StatusBadRequest)
-		return
-	}
-
-	// Store configID in request context
-	ctx := context.WithValue(r.Context(), "configID", configID)
-	r = r.WithContext(ctx)
 
 	// Use a custom ResponseWriter to capture all status codes
 	lrw := &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
@@ -144,8 +129,18 @@ type WebhookData struct {
 }
 
 func (s *webhookServer) handleDatapush(w http.ResponseWriter, r *http.Request) {
+	configIDStr := r.PathValue("configID")
+	configID, err := strconv.ParseInt(configIDStr, 10, 64)
+	if err != nil {
+		log.Warn("webhook", "Invalid config ID: %s", configIDStr)
+		http.Error(w, "Invalid config ID", http.StatusBadRequest)
+		return
+	}
+	_ = configID // TODO: Do we need it, actually?
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Warn("webhook", "Failed to read request body")
 		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 		return
 	}
@@ -155,6 +150,7 @@ func (s *webhookServer) handleDatapush(w http.ResponseWriter, r *http.Request) {
 
 	var data WebhookData
 	if err := json.Unmarshal(body, &data); err != nil {
+		log.Warn("webhook", "Failed to parse request body: %v\nRequest: %v", err, string(body))
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
 	}

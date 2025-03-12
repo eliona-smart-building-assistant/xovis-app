@@ -11,15 +11,6 @@
 		},
 		{
 			"enable": true,
-			"name": "name",
-			"subtype": "info",
-			"translation": {
-				"de": "Name",
-				"en": "Name"
-			}
-		},
-		{
-			"enable": true,
 			"name": "model",
 			"subtype": "info",
 			"translation": {

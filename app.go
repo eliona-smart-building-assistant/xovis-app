@@ -208,7 +208,7 @@ func listenApi() {
 	mux.Handle("/", apiRouter)
 
 	// Register Webhook handler under /webhook
-	mux.Handle("/webhook", webhook.NewWebhookHandler())
+	mux.Handle("/webhook/", webhook.NewWebhookHandler())
 
 	// Wrap with middleware
 	handler := frontend.NewEnvironmentHandler(
@@ -216,7 +216,7 @@ func listenApi() {
 	)
 
 	// Start the server
-	port := common.Getenv("API_SERVER_PORT", "3000")
+	port := common.Getenv("API_SERVER_PORT", "3030")
 	err := http.ListenAndServe(":"+port, handler)
 	log.Fatal("main", "API server: %v", err)
 }

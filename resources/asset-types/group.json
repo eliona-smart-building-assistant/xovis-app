@@ -1,15 +1,5 @@
 {
-	"attributes": [
-		{
-			"enable": true,
-			"name": "name",
-			"subtype": "info",
-			"translation": {
-				"de": "Name",
-				"en": "Name"
-			}
-		}
-	],
+	"attributes": [],
 	"custom": true,
 	"name": "xovis_group",
 	"translation": {

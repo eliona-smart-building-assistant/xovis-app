@@ -2,24 +2,6 @@
 	"attributes": [
 		{
 			"enable": true,
-			"name": "id",
-			"subtype": "info",
-			"translation": {
-				"de": "ID",
-				"en": "ID"
-			}
-		},
-		{
-			"enable": true,
-			"name": "name",
-			"subtype": "info",
-			"translation": {
-				"de": "Name",
-				"en": "Name"
-			}
-		},
-		{
-			"enable": true,
 			"name": "presence",
 			"subtype": "input",
 			"translation": {
