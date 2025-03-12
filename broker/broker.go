@@ -169,8 +169,12 @@ func NewXovisConnector(sensorConf confmodel.Sensor) *Xovis {
 }
 
 func (x *Xovis) DiscoverDevices() ([]confmodel.Sensor, error) {
+	deviceItself, err := x.getDeviceInfo()
+	if err != nil {
+		return nil, fmt.Errorf("making request to get the device itself: %w", err)
+	}
+
 	var resp []byte
-	var err error
 	switch x.sensorConf.DiscoveryMode {
 	case "L2":
 		resp, err = x.http.Request(http.MethodGet, ApiPath+"/discover/localnetwork", nil)
@@ -195,11 +199,6 @@ func (x *Xovis) DiscoverDevices() ([]confmodel.Sensor, error) {
 		return nil, fmt.Errorf("unknown discovery mode: %s", x.sensorConf.DiscoveryMode)
 	}
 
-	deviceItself, err := x.getDeviceInfo()
-	if err != nil {
-		return nil, fmt.Errorf("making request to get the device itself: %w", err)
-	}
-
 	var discoveryResult struct {
 		Sensors []struct {
 			MAC   string   `json:"mac"`
@@ -217,7 +216,7 @@ func (x *Xovis) DiscoverDevices() ([]confmodel.Sensor, error) {
 	}
 
 	if err := json.Unmarshal(resp, &discoveryResult); err != nil {
-		return nil, fmt.Errorf("parsing discovery response: %w", err)
+		return nil, fmt.Errorf("parsing discovery response: %w\nResponse: %s", err, string(resp))
 	}
 
 	var sensors []confmodel.Sensor
@@ -286,7 +285,7 @@ func (x *Xovis) getDeviceID() (idResponse, error) {
 
 	var idResp idResponse
 	if err := json.Unmarshal(resp, &idResp); err != nil {
-		return idResponse{}, fmt.Errorf("parsing device id response: %w", err)
+		return idResponse{}, fmt.Errorf("parsing device id response: %w\nResponse: %s", err, string(resp))
 	}
 
 	return idResp, nil
@@ -305,7 +304,7 @@ func (x *Xovis) getDeviceInfo() (deviceInfoResponse, error) {
 
 	var deviceInfoResp deviceInfoResponse
 	if err := json.Unmarshal(resp, &deviceInfoResp); err != nil {
-		return deviceInfoResponse{}, fmt.Errorf("parsing device info response: %w", err)
+		return deviceInfoResponse{}, fmt.Errorf("parsing device info response: %w\nResponse: %s", err, string(resp))
 	}
 
 	return deviceInfoResp, nil
@@ -389,7 +388,7 @@ func (x *Xovis) getCountersRaw() (Logics, error) {
 		return logics, fmt.Errorf("getting counter data: %w", err)
 	}
 	if err := json.Unmarshal(rawData, &logics); err != nil {
-		return logics, fmt.Errorf("decoding logics: %w", err)
+		return logics, fmt.Errorf("decoding logics: %w\nResponse: %s", err, string(rawData))
 	}
 	return logics, nil
 }
