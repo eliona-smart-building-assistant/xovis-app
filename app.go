@@ -47,13 +47,6 @@ func initialization() {
 	conn := db.NewInitConnectionWithContextAndApplicationName(ctx, app.AppName())
 	defer conn.Close(ctx)
 
-	//todo: rm. This is temporary hack for asset types improvements
-	err := asset.InitAssetTypeFiles("resources/asset-types/*.json")(conn)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	// Init the app before the first run.
 	app.Init(conn, app.AppName(),
 		app.ExecSqlFile("conf/init.sql"),
