@@ -164,7 +164,7 @@ func UpsertSensor(ctx context.Context, sensor confmodel.Sensor) (confmodel.Senso
 	// Sensor has two unique columns, therefore we cannot use upsert properly.
 	err = dbSensor.InsertG(ctx, boil.Infer())
 	if err != nil {
-		log.Debug("updating sensor %v instead of inserting", dbSensor.MacAddress.String)
+		log.Debug("dbhelper", "updating sensor %v instead of inserting", dbSensor.MacAddress.String)
 		_, err = dbSensor.UpdateG(ctx, boil.Infer())
 	}
 	if err != nil {
@@ -181,7 +181,7 @@ func UpsertSensorDiscovery(ctx context.Context, sensor confmodel.Sensor) (confmo
 	// Sensor has two unique columns, therefore we cannot use upsert properly.
 	err = dbSensor.InsertG(ctx, boil.Infer())
 	if err != nil {
-		log.Debug("updating sensor %v instead of inserting", dbSensor.MacAddress.String)
+		log.Debug("dbhelper", "updating sensor %v instead of inserting", dbSensor.MacAddress.String)
 		_, err = dbSensor.UpdateG(ctx, boil.Whitelist("mac_address"))
 	}
 	if err != nil {
