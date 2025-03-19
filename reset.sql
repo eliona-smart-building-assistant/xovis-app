@@ -110,4 +110,12 @@ WHERE dashboard_id IN (
 DELETE FROM public.dashboard
 WHERE name LIKE 'Xovis%';
 
-DELETE FROM xovis.asset;
+DO $$
+BEGIN
+    -- Ignore errors if 'xovis.asset' doesn't exist
+    BEGIN
+        DELETE FROM xovis.asset;
+    EXCEPTION WHEN undefined_table THEN
+        -- Do nothing
+    END;
+END $$;
