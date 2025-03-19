@@ -41,7 +41,7 @@ require (
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/randomize v0.0.1 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/image v0.15.0 // indirect
+	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 )
