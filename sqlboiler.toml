@@ -11,7 +11,7 @@ host   = "localhost"
 port   = 6001
 user   = "postgres"
 pass   = "secret"
-schema = "xovis"
+schema = "xovis2"
 sslmode = "disable"
 
 [[types]]

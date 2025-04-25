@@ -157,16 +157,16 @@ var SensorWhere = struct {
 	L3Count         whereHelpernull_Int32
 	MacAddress      whereHelpernull_String
 }{
-	ID:              whereHelperint64{field: "\"xovis\".\"sensor\".\"id\""},
-	ConfigurationID: whereHelperint64{field: "\"xovis\".\"sensor\".\"configuration_id\""},
-	Username:        whereHelperstring{field: "\"xovis\".\"sensor\".\"username\""},
-	Password:        whereHelperstring{field: "\"xovis\".\"sensor\".\"password\""},
-	Hostname:        whereHelperstring{field: "\"xovis\".\"sensor\".\"hostname\""},
-	Port:            whereHelperint32{field: "\"xovis\".\"sensor\".\"port\""},
-	DiscoveryMode:   whereHelperstring{field: "\"xovis\".\"sensor\".\"discovery_mode\""},
-	L3FirstIP:       whereHelpernull_String{field: "\"xovis\".\"sensor\".\"l3_first_ip\""},
-	L3Count:         whereHelpernull_Int32{field: "\"xovis\".\"sensor\".\"l3_count\""},
-	MacAddress:      whereHelpernull_String{field: "\"xovis\".\"sensor\".\"mac_address\""},
+	ID:              whereHelperint64{field: "\"xovis2\".\"sensor\".\"id\""},
+	ConfigurationID: whereHelperint64{field: "\"xovis2\".\"sensor\".\"configuration_id\""},
+	Username:        whereHelperstring{field: "\"xovis2\".\"sensor\".\"username\""},
+	Password:        whereHelperstring{field: "\"xovis2\".\"sensor\".\"password\""},
+	Hostname:        whereHelperstring{field: "\"xovis2\".\"sensor\".\"hostname\""},
+	Port:            whereHelperint32{field: "\"xovis2\".\"sensor\".\"port\""},
+	DiscoveryMode:   whereHelperstring{field: "\"xovis2\".\"sensor\".\"discovery_mode\""},
+	L3FirstIP:       whereHelpernull_String{field: "\"xovis2\".\"sensor\".\"l3_first_ip\""},
+	L3Count:         whereHelpernull_Int32{field: "\"xovis2\".\"sensor\".\"l3_count\""},
+	MacAddress:      whereHelpernull_String{field: "\"xovis2\".\"sensor\".\"mac_address\""},
 }
 
 // SensorRels is where relationship names are stored.
@@ -598,8 +598,8 @@ func (sensorL) LoadConfiguration(ctx context.Context, e boil.ContextExecutor, si
 	}
 
 	query := NewQuery(
-		qm.From(`xovis.configuration`),
-		qm.WhereIn(`xovis.configuration.id in ?`, argsSlice...),
+		qm.From(`xovis2.configuration`),
+		qm.WhereIn(`xovis2.configuration.id in ?`, argsSlice...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -680,7 +680,7 @@ func (o *Sensor) SetConfiguration(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"xovis\".\"sensor\" SET %s WHERE %s",
+		"UPDATE \"xovis2\".\"sensor\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"configuration_id"}),
 		strmangle.WhereClause("\"", "\"", 2, sensorPrimaryKeyColumns),
 	)
@@ -717,10 +717,10 @@ func (o *Sensor) SetConfiguration(ctx context.Context, exec boil.ContextExecutor
 
 // Sensors retrieves all the records using an executor.
 func Sensors(mods ...qm.QueryMod) sensorQuery {
-	mods = append(mods, qm.From("\"xovis\".\"sensor\""))
+	mods = append(mods, qm.From("\"xovis2\".\"sensor\""))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
-		queries.SetSelect(q, []string{"\"xovis\".\"sensor\".*"})
+		queries.SetSelect(q, []string{"\"xovis2\".\"sensor\".*"})
 	}
 
 	return sensorQuery{q}
@@ -741,7 +741,7 @@ func FindSensor(ctx context.Context, exec boil.ContextExecutor, iD int64, select
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"xovis\".\"sensor\" where \"id\"=$1", sel,
+		"select %s from \"xovis2\".\"sensor\" where \"id\"=$1", sel,
 	)
 
 	q := queries.Raw(query, iD)
@@ -803,9 +803,9 @@ func (o *Sensor) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"xovis\".\"sensor\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"xovis2\".\"sensor\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"xovis\".\"sensor\" %sDEFAULT VALUES%s"
+			cache.query = "INSERT INTO \"xovis2\".\"sensor\" %sDEFAULT VALUES%s"
 		}
 
 		var queryOutput, queryReturning string
@@ -877,7 +877,7 @@ func (o *Sensor) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 			return 0, errors.New("appdb: unable to update sensor, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"xovis\".\"sensor\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"xovis2\".\"sensor\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
 			strmangle.WhereClause("\"", "\"", len(wl)+1, sensorPrimaryKeyColumns),
 		)
@@ -968,7 +968,7 @@ func (o SensorSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"xovis\".\"sensor\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"xovis2\".\"sensor\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, sensorPrimaryKeyColumns, len(o)))
 
@@ -1069,7 +1069,7 @@ func (o *Sensor) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 			conflict = make([]string, len(sensorPrimaryKeyColumns))
 			copy(conflict, sensorPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"xovis\".\"sensor\"", updateOnConflict, ret, update, conflict, insert, opts...)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"xovis2\".\"sensor\"", updateOnConflict, ret, update, conflict, insert, opts...)
 
 		cache.valueMapping, err = queries.BindMapping(sensorType, sensorMapping, insert)
 		if err != nil {
@@ -1134,7 +1134,7 @@ func (o *Sensor) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), sensorPrimaryKeyMapping)
-	sql := "DELETE FROM \"xovis\".\"sensor\" WHERE \"id\"=$1"
+	sql := "DELETE FROM \"xovis2\".\"sensor\" WHERE \"id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1208,7 +1208,7 @@ func (o SensorSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"xovis\".\"sensor\" WHERE " +
+	sql := "DELETE FROM \"xovis2\".\"sensor\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, sensorPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
@@ -1282,7 +1282,7 @@ func (o *SensorSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"xovis\".\"sensor\".* FROM \"xovis\".\"sensor\" WHERE " +
+	sql := "SELECT \"xovis2\".\"sensor\".* FROM \"xovis2\".\"sensor\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, sensorPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
@@ -1305,7 +1305,7 @@ func SensorExistsG(ctx context.Context, iD int64) (bool, error) {
 // SensorExists checks if the Sensor row exists.
 func SensorExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"xovis\".\"sensor\" where \"id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"xovis2\".\"sensor\" where \"id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)

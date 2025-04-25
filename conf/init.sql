@@ -13,10 +13,10 @@
 --  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 --  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-create schema if not exists xovis;
+create schema if not exists xovis2;
 
 -- Should be editable by eliona frontend.
-create table if not exists xovis.configuration
+create table if not exists xovis2.configuration
 (
 	id                   bigserial primary key,
 	check_certificate    boolean not null,
@@ -29,10 +29,10 @@ create table if not exists xovis.configuration
 );
 
 -- Should be editable by eliona frontend.
-create table if not exists xovis.sensor
+create table if not exists xovis2.sensor
 (
 	id                   bigserial primary key,
-	configuration_id     bigserial not null references xovis.configuration(id) ON DELETE CASCADE,
+	configuration_id     bigserial not null references xovis2.configuration(id) ON DELETE CASCADE,
 	username             text not null,
 	password             text not null,
 	hostname             text not null,
@@ -45,10 +45,10 @@ create table if not exists xovis.sensor
 	mac_address text unique
 );
 
-create table if not exists xovis.asset
+create table if not exists xovis2.asset
 (
 	id               bigserial primary key,
-	configuration_id bigserial not null references xovis.configuration(id) ON DELETE CASCADE,
+	configuration_id bigserial not null references xovis2.configuration(id) ON DELETE CASCADE,
 	project_id       text      not null,
 	global_asset_id  text      not null,
 	provider_id      text      not null,

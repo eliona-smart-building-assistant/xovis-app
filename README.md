@@ -30,13 +30,11 @@ This initialization can be handled by the `reset.sql` script.
 
 ### Database tables ###
 
-<mark>Todo: Describe other tables if the app needs them.</mark>
-
 The app requires configuration data that remains in the database. To do this, the app creates its own database schema `xovis` during initialization. To modify and handle the configuration data the app provides an API access. Have a look at the [API specification](https://eliona-smart-building-assistant.github.io/open-api-docs/?https://raw.githubusercontent.com/eliona-smart-building-assistant/xovis-app/develop/openapi.yaml) how the configuration tables should be used.
 
-- `xovis.configuration`: Contains configuration of the app. Editable through the API.
+- `xovis2.configuration`: Contains configuration of the app. Editable through the API.
 
-- `xovis.asset`: Provides asset mapping. Maps broker's asset IDs to Eliona asset IDs.
+- `xovis2.asset`: Provides asset mapping. Maps broker's asset IDs to Eliona asset IDs.
 
 **Generation**: to generate access method to database see Generation section below.
 

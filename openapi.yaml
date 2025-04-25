@@ -26,8 +26,8 @@ servers:
   - url: "https://{server}/v1"
     variables:
       server:
-        default: xovis
-  - url: "https://{environment}.eliona.io/apps/xovis/api/v1"
+        default: xovis2
+  - url: "https://{environment}.eliona.io/apps/xovis2/api/v1"
     variables:
       environment:
         default: name

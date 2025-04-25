@@ -143,7 +143,7 @@ For continuous passing of the data (so that the data comes immediately as people
 1. Go to the sensor's configuration interface
 2. Go to `Settings > Singlesensor > Date push`
 3. Set up a new HTTPS connection:
-  - Destination: `https://{your-eliona-instance}/apps/xovis/api/v1/datapush/{configuration_id}`
+  - Destination: `https://{your-eliona-instance}/apps/xovis2/api/v1/datapush/{configuration_id}`
   - Port: 443
   - Advanced Settings -> Custom header: Name: `X-API-Key` Value: API key defined in Eliona
 4. Create a new Agent -> Live Data Push:

@@ -20,17 +20,17 @@
 SET SCHEMA 'public';
 
 DELETE FROM versioning.patches
-WHERE app_name = 'xovis';
+WHERE app_name = 'xovis2';
 
 INSERT INTO public.eliona_store (app_name, category, version)
-VALUES ('xovis', 'app', 'v0.0.0')
+VALUES ('xovis2', 'app', 'v0.0.0')
 ON CONFLICT (app_name) DO UPDATE SET version = 'v0.0.0';
 
 INSERT INTO public.eliona_app (app_name, enable)
-VALUES ('xovis', 't')
+VALUES ('xovis2', 't')
 ON CONFLICT (app_name) DO UPDATE SET initialized_at = null;
 
-DROP SCHEMA IF EXISTS xovis CASCADE;
+DROP SCHEMA IF EXISTS xovis2 CASCADE;
 
 DELETE FROM heap
 WHERE asset_id IN (
@@ -66,14 +66,14 @@ WHERE dashboard_id IN (
 DELETE FROM public.dashboard
 WHERE name LIKE 'Xovis%';
 
--- DELETE FROM eliona_app WHERE app_name = 'xovis';
--- DELETE FROM eliona_store WHERE app_name = 'xovis';
+-- DELETE FROM eliona_app WHERE app_name = 'xovis2';
+-- DELETE FROM eliona_store WHERE app_name = 'xovis2';
 
 -- Dev reset
 SET SCHEMA 'public';
 
 INSERT INTO public.eliona_app (app_name, enable)
-VALUES ('xovis', 't')
+VALUES ('xovis2', 't')
 ON CONFLICT (app_name) DO UPDATE SET initialized_at = null;
 
 DELETE FROM heap
@@ -112,9 +112,9 @@ WHERE name LIKE 'Xovis%';
 
 DO $$
 BEGIN
-    -- Ignore errors if 'xovis.asset' doesn't exist
+    -- Ignore errors if 'xovis2.asset' doesn't exist
     BEGIN
-        DELETE FROM xovis.asset;
+        DELETE FROM xovis2.asset;
     EXCEPTION WHEN undefined_table THEN
         -- Do nothing
     END;

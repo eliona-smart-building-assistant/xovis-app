@@ -1,13 +1,13 @@
 {
-  "name": "xovis",
-  "elionaMinVersion": "v12.0.0",
+  "name": "xovis2",
+  "elionaMinVersion": "v13.0.0",
   "displayName": {
     "en": "Xovis",
     "de": "Xovis"
   },
   "description": {
-    "en": "The Xovis app is used to access Xovis people counters.",
-    "de": "Die Xovis-App wird für den Zugang zu den Xovis-Personenzählern verwendet"
+    "en": "The Xovis app v2 is used to access Xovis people counters. Successor to Xovis people counter app.",
+    "de": "Die Xovis-App v2 wird für den Zugang zu den Xovis-Personenzählern verwendet"
   },
   "dashboardTemplateNames": [
     "Xovis"
